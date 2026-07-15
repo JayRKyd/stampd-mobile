@@ -201,7 +201,13 @@ export default function LoginScreen() {
               placeholder="Password"
               placeholderTextColor={Colors.textMuted}
               secureTextEntry={!showPassword}
-              autoComplete={mode === 'signup' ? 'new-password' : 'current-password'}
+              // Signup: suppress iOS's automatic strong-password overlay so
+              // people type their own password ('oneTimeCode' is the standard
+              // opt-out — 'none' alone doesn't stop the heuristic on secure
+              // fields). Sign-in keeps normal keychain autofill.
+              autoComplete={mode === 'signup' ? 'off' : 'current-password'}
+              textContentType={mode === 'signup' ? 'oneTimeCode' : 'password'}
+              importantForAutofill={mode === 'signup' ? 'no' : 'yes'}
             />
             <TouchableOpacity
               onPress={() => setShowPassword(v => !v)}
