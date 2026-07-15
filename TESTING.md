@@ -108,6 +108,7 @@ Merchant side: laptop on `/stamp`. Customer side: phone on Home (PIN visible).
 - [ ] Fill Ana's Coffee Spot card to 10/10 (use cooldown override repeatedly)
 - [ ] At 10/10: hero slide flips to "Claim your Free Coffee"; Rewards tab shows a ticket, "Ready to redeem" count is 1
 - [ ] Island Cutz multi-tier: at 5 stamps the 25%-off tier reward appears while the card keeps counting toward 10
+- [ ] **Tier editing survives:** on the dashboard `/card` page, edit the tiers (change a title, add a third tier) → save → reload the page and check the mobile card detail: ALL tiers are still there with the right thresholds (this page used to silently collapse multi-tier cards into one tier)
 - [ ] Tap the reward ticket → "Show this to redeem" sheet opens (this is what a customer shows at the counter)
 - [ ] Merchant side: Customers page → open Ana's drawer → pending reward is listed → mark it **redeemed**
 - [ ] Ana's app: reward moves to history as "Redeemed", she gets a notification
