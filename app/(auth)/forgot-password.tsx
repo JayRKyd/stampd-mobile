@@ -7,6 +7,7 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '@/lib/supabase';
+import { WEB_URL } from '@/lib/webLinks';
 import { Colors, FontFamily, Palette as J, Shadow } from '@/constants/theme';
 
 export default function ForgotPasswordScreen() {
@@ -26,7 +27,11 @@ export default function ForgotPasswordScreen() {
     }
     setLoading(true);
     setError('');
-    const { error } = await supabase.auth.resetPasswordForEmail(cleaned);
+    // Without an explicit redirect the link lands on the site root, where the
+    // token is consumed silently and no reset form ever appears
+    const { error } = await supabase.auth.resetPasswordForEmail(cleaned, {
+      redirectTo: `${WEB_URL}/reset-password`,
+    });
     setLoading(false);
     if (error) { setError(error.message); return; }
     setSent(true);

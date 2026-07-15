@@ -12,8 +12,9 @@ import {
 import * as SplashScreen from 'expo-splash-screen';
 import * as Sentry from '@sentry/react-native';
 import { StatusBar } from 'expo-status-bar';
-import { View } from 'react-native';
+import { Linking, View } from 'react-native';
 import { supabase } from '@/lib/supabase';
+import { createSessionFromAuthUrl, isAuthCallbackUrl } from '@/lib/authDeepLink';
 import { registerPushToken } from '@/lib/pushNotifications';
 import { profileNamesComplete } from '@/lib/ensureProfile';
 import { clearDataCache } from '@/lib/dataCache';
@@ -47,6 +48,27 @@ function RootLayout() {
     PlusJakartaSans_700Bold,
     PlusJakartaSans_800ExtraBold,
   });
+
+  useEffect(() => {
+    const handleAuthUrl = async (url: string | null) => {
+      if (!url || !isAuthCallbackUrl(url)) return;
+      try {
+        await createSessionFromAuthUrl(url);
+        router.replace('/(tabs)');
+      } catch {
+        router.replace({
+          pathname: '/(auth)/login',
+          params: { authError: 'That verification link is invalid or has expired. Please try signing in again.' },
+        });
+      }
+    };
+
+    Linking.getInitialURL().then(handleAuthUrl).catch(() => {});
+    const subscription = Linking.addEventListener('url', ({ url }) => {
+      handleAuthUrl(url);
+    });
+    return () => subscription.remove();
+  }, [router]);
 
   const refreshProfile = useCallback(async (userId: string) => {
     const ready = await profileNamesComplete(userId);

@@ -7,6 +7,7 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '@/lib/supabase';
+import { WEB_URL } from '@/lib/webLinks';
 import { Colors, FontFamily, Palette as J, Shadow } from '@/constants/theme';
 
 const TERMS_VERSION = '1.0';
@@ -17,7 +18,7 @@ const PRIVACY_URL = process.env.EXPO_PUBLIC_PRIVACY_URL;
 export default function LoginScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { mode: initialMode } = useLocalSearchParams<{ mode?: string }>();
+  const { mode: initialMode, authError } = useLocalSearchParams<{ mode?: string; authError?: string }>();
   const [mode, setMode] = useState<'signin' | 'signup'>(initialMode === 'signup' ? 'signup' : 'signin');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -25,7 +26,7 @@ export default function LoginScreen() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState(authError ?? '');
   const [confirmed, setConfirmed] = useState(false);
   const [legalAccepted, setLegalAccepted] = useState(false);
 
@@ -51,6 +52,7 @@ export default function LoginScreen() {
         email,
         password,
         options: {
+          emailRedirectTo: `${WEB_URL}/confirmed`,
           data: {
             first_name: firstName.trim(),
             last_name: lastName.trim(),

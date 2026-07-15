@@ -15,7 +15,10 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.stampdbahamas.app"
+      "bundleIdentifier": "com.stampdbahamas.app",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -53,8 +56,10 @@
     ],
     "extra": {
       "eas": {
-        "projectId": ""
-      }
-    }
+        "projectId": "4f837e94-3fd7-400d-927c-52029ddbc8e5"
+      },
+      "router": {}
+    },
+    "owner": "jayrkyd"
   }
 }
