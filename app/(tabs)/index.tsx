@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
+import { useIsFocused } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Path } from 'react-native-svg';
@@ -55,6 +56,11 @@ export default function HomeScreen() {
   const [heroIndex, setHeroIndex] = useState(0);
   const [view, setView] = useState<'shops' | 'cards'>('shops');
   const heroScrollRef = useRef<ScrollView>(null);
+  const heroIndexRef = useRef(0);
+  // Auto-advance holds off until this timestamp; touching the carousel
+  // pushes it out so people can stop and read a slide.
+  const heroPausedUntilRef = useRef(0);
+  const isFocused = useIsFocused();
 
   const copyPinToClipboard = (pin: string) => {
     if (!pin) return;
@@ -175,8 +181,26 @@ export default function HomeScreen() {
 
   const onHeroScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
     const idx = Math.round(e.nativeEvent.contentOffset.x / (HERO_W + HERO_GAP));
+    heroIndexRef.current = idx;
     if (idx !== heroIndex) setHeroIndex(idx);
   };
+
+  const pauseHeroAutoplay = () => {
+    heroPausedUntilRef.current = Date.now() + 10000;
+  };
+
+  // Auto-advance the hero carousel every 4s, wrapping back to the first
+  // slide. Only runs while this tab is focused and there is more than one
+  // slide; a user touch pauses it (see pauseHeroAutoplay).
+  useEffect(() => {
+    if (!isFocused || heroCount <= 1) return;
+    const id = setInterval(() => {
+      if (Date.now() < heroPausedUntilRef.current) return;
+      const next = (heroIndexRef.current + 1) % heroCount;
+      heroScrollRef.current?.scrollTo({ x: next * (HERO_W + HERO_GAP), animated: true });
+    }, 4000);
+    return () => clearInterval(id);
+  }, [isFocused, heroCount]);
 
   return (
     <View style={s.root}>
@@ -226,6 +250,7 @@ export default function HomeScreen() {
               activeOpacity={0.7}
               onPress={() => {
                 if (pendingSteps.length > 0) {
+                  pauseHeroAutoplay();
                   heroScrollRef.current?.scrollTo({ x: heroCards.length * (HERO_W + HERO_GAP), animated: true });
                 } else {
                   router.push('/my-cards');
@@ -247,6 +272,9 @@ export default function HomeScreen() {
             snapToAlignment="start"
             bounces={false}
             overScrollMode="never"
+            onTouchStart={pauseHeroAutoplay}
+            onScrollBeginDrag={pauseHeroAutoplay}
+            onScrollEndDrag={pauseHeroAutoplay}
             onScroll={onHeroScroll}
             scrollEventThrottle={16}
             style={s.heroScroll}
