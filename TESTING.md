@@ -165,6 +165,7 @@ Merchant side: laptop on `/stamp`. Customer side: phone on Home (PIN visible).
 
 - [ ] Visit labels pluralize correctly everywhere ("1 cut", "3 cuts", never "classs")
 - [ ] Merchant brand colors render on cards with readable text (try a light card color from `/card` to test adaptive text)
+- [ ] Cover photo: upload one in dashboard Settings → Business profile → it appears behind the header on that merchant's page in the app (replace it once too — the app must show the NEW photo, not a cached old one)
 - [ ] No screen shows raw error JSON, "[object Object]", or a dead spinner anywhere in the run
 - [ ] New app icon on the home screen (stamp card, not the star), splash shows the card mark on teal
 
