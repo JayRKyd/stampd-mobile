@@ -144,7 +144,17 @@ Merchant side: laptop on `/stamp`. Customer side: phone on Home (PIN visible).
 - [ ] Sign in as Ben → Home shows Ben's (empty) data — **none of Ana's cards, stats, or PIN leak through** (cache isolation)
 - [ ] Sign back in as Ana → everything's still there
 
-### 6.5 Account deletion
+### 6.5 Counter mode (kiosk)
+
+- [ ] Dashboard Settings → Counter mode → "Turn on counter mode" → you land on the Stamp page with a minimal header ("Counter mode" badge, Exit button) and no sidebar
+- [ ] Try to reach `/dashboard`, `/customers`, `/settings` by typing the URL → every one of them bounces you straight back to `/stamp`
+- [ ] Stamping still works fully: staff picker, staff PIN (if required), quantity, guest PIN
+- [ ] Refresh the page → still locked (survives reload)
+- [ ] Exit with a WRONG password → "Incorrect password", still locked
+- [ ] Exit with the right password → full dashboard is back
+- [ ] Check another browser/device on the same account while one is locked → it is NOT locked (counter mode is per-device)
+
+### 6.6 Account deletion
 
 - [ ] Ben: Profile → delete account → confirm → signed out to welcome
 - [ ] Try signing in as Ben → rejected (account gone)
