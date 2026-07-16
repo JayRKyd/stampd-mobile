@@ -289,7 +289,7 @@ export default function MerchantDetailScreen() {
                   logoUrl={merchant.logo_url}
                   stampIcon={card.stamp_icon}
                   visitLabel={card.visit_label}
-                  onPress={() => router.push(`/card/${membership!.id}`)}
+                  onPress={() => router.replace(`/card/${membership!.id}`)}
                 />
                 {card.reward_description ? (
                   <Text style={s.rewardFootnote}>{card.reward_description}</Text>
@@ -303,7 +303,9 @@ export default function MerchantDetailScreen() {
                     <Text style={s.memberText}>You're a member</Text>
                   </View>
                   <TouchableOpacity
-                    onPress={() => router.push(`/card/${membership!.id}`)}
+                    // replace, not push: see the matching Details link on the
+                    // card screen — bouncing between the pair must not stack
+                    onPress={() => router.replace(`/card/${membership!.id}`)}
                     style={s.viewCardBtn}
                     activeOpacity={0.7}
                   >

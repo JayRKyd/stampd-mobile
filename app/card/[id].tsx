@@ -314,7 +314,15 @@ export default function CardDetailScreen() {
         <View style={s.nav}>
           <View style={{ width: 36 }} />
           <Text style={s.navTitle} numberOfLines={1}>{merchants.business_name}</Text>
-          <TouchableOpacity style={s.closeBtn} onPress={() => router.back()} activeOpacity={0.7}>
+          {/* X is a hard exit to the main tabs, not another back button */}
+          <TouchableOpacity
+            style={s.closeBtn}
+            onPress={() => {
+              if (router.canDismiss()) router.dismissAll();
+              else router.replace('/(tabs)');
+            }}
+            activeOpacity={0.7}
+          >
             <Ionicons name="close" size={16} color="rgba(255,255,255,0.85)" />
           </TouchableOpacity>
         </View>
@@ -359,7 +367,9 @@ export default function CardDetailScreen() {
 
           <TouchableOpacity
             style={s.action}
-            onPress={() => router.push(`/discover/${merchants.id}`)}
+            // replace, not push: card <-> merchant details are siblings, and
+            // stacking copies traps users in a long chain of back-presses
+            onPress={() => router.replace(`/discover/${merchants.id}`)}
             activeOpacity={0.75}
           >
             <View style={s.actionCircle}>
