@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
   Modal, Dimensions, ActivityIndicator,
@@ -8,6 +8,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '@/lib/supabase';
+import { useCachedData } from '@/lib/dataCache';
 import { Colors, FontFamily, Palette as J, Radius, Spacing, Shadow } from '@/constants/theme';
 import { getStampIcon } from '@/lib/stampIcons';
 import { cardGradient, heroGradient } from '@/lib/cardColor';
@@ -175,18 +176,22 @@ export default function CardDetailScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
 
-  const [membership, setMembership] = useState<Membership | null>(null);
-  const [events, setEvents] = useState<StampEvent[]>([]);
-  const [pendingReward, setPendingReward] = useState<Reward | null>(null);
-  const [loading, setLoading] = useState(true);
   const [pinVisible, setPinVisible] = useState(false);
   const [rewardVisible, setRewardVisible] = useState(false);
   const [stampSuccess, setStampSuccess] = useState(false);
 
-  async function load() {
+  // Cached like the tab screens: last-known card renders instantly (and
+  // offline) while a fresh fetch runs. Fetcher returns null on failure so
+  // stale data is kept rather than blanking the screen.
+  const { data, isLoading, refresh } = useCachedData<{
+    membership: Membership;
+    events: StampEvent[];
+    pendingReward: Reward | null;
+  }>(`card-detail:${id}`, async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) { setLoading(false); return; }
+      const { data: { session } } = await supabase.auth.getSession();
+      const user = session?.user;
+      if (!user) return null;
 
       const { data: m, error: mErr } = await supabase
         .from('memberships')
@@ -197,7 +202,7 @@ export default function CardDetailScreen() {
         .eq('user_id', user.id)
         .single();
 
-      if (mErr || !m) { setLoading(false); return; }
+      if (mErr || !m) return null;
 
       const loyaltyCardId = (m as any).loyalty_cards?.id;
       let tiers: RewardTier[] = [];
@@ -210,8 +215,6 @@ export default function CardDetailScreen() {
         tiers = tierData ?? [];
       }
 
-      setMembership({ ...m, loyalty_cards: { ...(m as any).loyalty_cards, reward_tiers: tiers } } as any);
-
       const [evRes, rwRes] = await Promise.all([
         supabase.from('stamp_events').select('id, created_at, method, stamp_number')
           .eq('membership_id', id).order('created_at', { ascending: false }).limit(50),
@@ -220,26 +223,45 @@ export default function CardDetailScreen() {
           .order('created_at', { ascending: false }).limit(1).maybeSingle(),
       ]);
 
-      setEvents(evRes.data ?? []);
-      setPendingReward(rwRes.data ?? null);
-    } finally {
-      setLoading(false);
+      return {
+        membership: { ...m, loyalty_cards: { ...(m as any).loyalty_cards, reward_tiers: tiers } } as unknown as Membership,
+        events: evRes.data ?? [],
+        pendingReward: rwRes.data ?? null,
+      };
+    } catch {
+      return null;
     }
-  }
+  });
 
-  useEffect(() => { load(); }, [id]);
+  const membership = data?.membership ?? null;
+  const events = data?.events ?? [];
+  const pendingReward = data?.pendingReward ?? null;
 
   function handleStampSuccess() {
     setPinVisible(false);
     setStampSuccess(true);
-    load();
+    refresh();
     setTimeout(() => setStampSuccess(false), 3000);
   }
 
-  if (loading || !membership) {
+  if (!membership) {
     return (
       <View style={s.loadingScreen}>
-        <ActivityIndicator color="#fff" size="large" />
+        {isLoading ? (
+          <ActivityIndicator color="#fff" size="large" />
+        ) : (
+          <>
+            <Text style={s.offlineText}>
+              Can't load this card right now.{'\n'}Check your connection and try again.
+            </Text>
+            <TouchableOpacity style={s.offlineBtn} onPress={refresh} activeOpacity={0.8}>
+              <Text style={s.offlineBtnText}>Try again</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => router.back()} activeOpacity={0.7}>
+              <Text style={s.offlineBackText}>Go back</Text>
+            </TouchableOpacity>
+          </>
+        )}
       </View>
     );
   }
@@ -424,6 +446,26 @@ export default function CardDetailScreen() {
 const s = StyleSheet.create({
   root: { flex: 1, backgroundColor: '#060f14' },
   loadingScreen: { flex: 1, backgroundColor: '#060f14', alignItems: 'center', justifyContent: 'center' },
+  offlineText: {
+    fontSize: 14,
+    fontFamily: FontFamily.medium,
+    color: 'rgba(255,255,255,0.85)',
+    textAlign: 'center',
+    lineHeight: 21,
+    marginBottom: 20,
+    paddingHorizontal: 40,
+  },
+  offlineBtn: {
+    height: 46,
+    paddingHorizontal: 28,
+    borderRadius: 23,
+    backgroundColor: 'rgba(255,255,255,0.14)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 14,
+  },
+  offlineBtnText: { fontSize: 14, fontFamily: FontFamily.bold, color: '#fff' },
+  offlineBackText: { fontSize: 13, fontFamily: FontFamily.medium, color: 'rgba(255,255,255,0.55)' },
 
   // Hero
   hero: { paddingHorizontal: 24, paddingBottom: 28, overflow: 'hidden' },

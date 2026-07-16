@@ -1,4 +1,3 @@
-import { useEffect, useState } from 'react';
 import {
   View, Text, StyleSheet, ScrollView,
   TouchableOpacity, ActivityIndicator, Linking,
@@ -9,6 +8,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '@/lib/supabase';
+import { useCachedData } from '@/lib/dataCache';
 import { Colors, FontFamily, Palette as J, Spacing, Shadow } from '@/constants/theme';
 import { cardGradient, shadeColor } from '@/lib/cardColor';
 import { visitLabelWord } from '@/lib/visitLabel';
@@ -50,38 +50,35 @@ export default function MerchantDetailScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
 
-  const [merchant, setMerchant] = useState<Merchant | null>(null);
-  const [unavailableReason, setUnavailableReason] = useState<'not_found' | 'inactive' | null>(null);
-  const [card, setCard] = useState<LoyaltyCard | null>(null);
-  const [membership, setMembership] = useState<Membership | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    async function load() {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+  // Cached like the tab screens: a previously-viewed merchant renders
+  // instantly (and offline) while a fresh fetch runs in the background.
+  // The fetcher returns null on any network failure so stale data is kept.
+  const { data, isLoading, refresh } = useCachedData<{
+    unavailable: 'not_found' | 'inactive' | null;
+    merchant: Merchant | null;
+    card: LoyaltyCard | null;
+    membership: Membership | null;
+  }>(`merchant:${id}`, async () => {
+    try {
+      // getSession reads local storage — getUser() is a network call and
+      // hanging on it offline is what stranded this screen on a spinner
+      const { data: { session } } = await supabase.auth.getSession();
+      const user = session?.user;
+      if (!user) return null;
 
       // select('*') so cover_image_url is picked up automatically once the
       // column exists, without erroring while it doesn't
-      const { data: m } = await supabase
+      const { data: m, error: mErr } = await supabase
         .from('merchants')
         .select('*')
         .eq('id', id)
         .maybeSingle();
 
-      if (!m) {
-        setUnavailableReason('not_found');
-        setLoading(false);
-        return;
-      }
+      if (mErr) return null;
+      if (!m) return { unavailable: 'not_found' as const, merchant: null, card: null, membership: null };
+      if (!m.is_active) return { unavailable: 'inactive' as const, merchant: null, card: null, membership: null };
 
-      if (!m.is_active) {
-        setUnavailableReason('inactive');
-        setLoading(false);
-        return;
-      }
-
-      setMerchant({
+      const merchant: Merchant = {
         id: m.id,
         business_name: m.business_name,
         category: m.category,
@@ -93,35 +90,55 @@ export default function MerchantDetailScreen() {
         merchant_type: m.merchant_type ?? null,
         trade: m.trade ?? null,
         workplace: m.workplace ?? null,
-      });
+      };
 
-      const { data: lc } = await supabase
+      const { data: lc, error: lcErr } = await supabase
         .from('loyalty_cards')
         .select('id, stamp_count_required, reward_title, reward_description, card_color, stamp_icon, visit_label')
         .eq('merchant_id', id)
         .eq('is_active', true)
-        .single();
+        .maybeSingle();
+      if (lcErr) return null;
 
-      setCard(lc);
-
-      const { data: ms } = await supabase
+      const { data: ms, error: msErr } = await supabase
         .from('memberships')
         .select('id, current_stamps, total_stamps_earned, total_rewards_earned')
         .eq('user_id', user.id)
         .eq('merchant_id', id)
         .maybeSingle();
+      if (msErr) return null;
 
-      setMembership(ms ?? null);
-      setLoading(false);
+      return { unavailable: null, merchant, card: lc ?? null, membership: ms ?? null };
+    } catch {
+      return null;
     }
+  });
 
-    load();
-  }, [id]);
+  const merchant = data?.merchant ?? null;
+  const unavailableReason = data?.unavailable ?? null;
+  const card = data?.card ?? null;
+  const membership = data?.membership ?? null;
 
-  if (loading) {
+  if (!data) {
     return (
       <View style={s.loadingScreen}>
-        <ActivityIndicator color={J.teal} size="large" />
+        {isLoading ? (
+          <ActivityIndicator color={J.teal} size="large" />
+        ) : (
+          <>
+            <Text style={s.errorText}>
+              Can't load this business right now.{'\n'}Check your connection and try again.
+            </Text>
+            <TouchableOpacity style={s.backLinkBtn} onPress={refresh}>
+              <Ionicons name="refresh" size={16} color={J.teal} />
+              <Text style={s.backLink}>Try again</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={s.backLinkBtn} onPress={() => router.back()}>
+              <Ionicons name="chevron-back" size={16} color={J.teal} />
+              <Text style={s.backLink}>Go back</Text>
+            </TouchableOpacity>
+          </>
+        )}
       </View>
     );
   }
