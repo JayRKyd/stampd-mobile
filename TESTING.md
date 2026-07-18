@@ -178,6 +178,7 @@ Merchant side: laptop on `/stamp`. Customer side: phone on Home (PIN visible).
 - [ ] Cover photo: upload one in dashboard Settings → Business profile → it appears behind the header on that merchant's page in the app (replace it once too — the app must show the NEW photo, not a cached old one)
 - [ ] No screen shows raw error JSON, "[object Object]", or a dead spinner anywhere in the run
 - [ ] New app icon on the home screen (stamp card, not the star), splash shows the card mark on teal
+- [ ] Merchant PWA: on a phone, dashboard Settings → "Stampd on your phone" → install (iOS: Safari Share → Add to Home Screen) → opens full screen from its own stamp-card icon, stamping + counter mode work inside it
 
 ---
 
