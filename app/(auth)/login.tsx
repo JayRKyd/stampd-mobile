@@ -12,8 +12,9 @@ import { Colors, FontFamily, Palette as J, Shadow } from '@/constants/theme';
 
 const TERMS_VERSION = '1.0';
 const PRIVACY_VERSION = '1.0';
-const TERMS_URL = process.env.EXPO_PUBLIC_TERMS_URL;
-const PRIVACY_URL = process.env.EXPO_PUBLIC_PRIVACY_URL;
+// Default to the public web pages; env vars can override for staging.
+const TERMS_URL = process.env.EXPO_PUBLIC_TERMS_URL ?? `${WEB_URL}/terms`;
+const PRIVACY_URL = process.env.EXPO_PUBLIC_PRIVACY_URL ?? `${WEB_URL}/privacy`;
 
 export default function LoginScreen() {
   const router = useRouter();
