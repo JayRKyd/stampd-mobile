@@ -76,11 +76,16 @@ export function LiveNotifications({ userId }: { userId: string | undefined }) {
           const n = payload.new as LiveNotification;
           // Refresh visible screens so the card reflects the new stamp/reward
           revalidateCache(...LIVE_KEYS);
-          // Celebrate: a firmer success buzz for a won reward, a tap for a stamp
+          // Haptic: notificationAsync is the most reliable generator on iOS — a
+          // one-shot impactAsync can be dropped when the Taptic engine is idle
+          // between events, which is why the Medium tap wasn't felt. Every
+          // notification gets the firm success pattern; a won reward gets an
+          // extra Heavy kick just after so it feels bigger than a routine stamp.
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
           if (n.type === 'reward_earned') {
-            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
-          } else {
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
+            setTimeout(() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy).catch(() => {});
+            }, 140);
           }
           show(n);
         },
