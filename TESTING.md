@@ -169,6 +169,8 @@ Merchant side: laptop on `/stamp`. Customer side: phone on Home (PIN visible).
 - [ ] **Slow images:** first open of Discover — logos fade in; second visit — instant (cache)
 - [ ] **Push notifications**: after installing the build made AFTER the APNs key was added — sign in, tap Allow on the permission prompt, then verify a row exists in `push_tokens`; stamp Ana while the app is backgrounded → lock-screen push arrives; fill her card → reward push arrives
 - [ ] **Notifications-off banner**: turn Stampd notifications OFF in iOS Settings → Profile tab shows the amber "Push notifications are off" banner → tap Turn on → lands directly on Stampd's iOS Settings page → enable → return to the app → banner disappears and a `push_tokens` row appears without reinstalling
+- [ ] **Live stamp moment (app open)**: with the customer's app OPEN, stamp them from the dashboard → within ~1s a branded toast drops from the top ("Stamp at …, 4 of 7"), a haptic fires, and the card on Home/My Cards ticks up WITHOUT a manual refresh; tapping the toast opens Notifications; no duplicate OS banner appears while the app is foregrounded
+- [ ] **Reward moment**: fill the card with the app open → the toast shows the reward (gift icon), a stronger success haptic fires
 - [ ] **Merchant nudge push**: Customers → open a customer → send nudge → push arrives on their phone; a second nudge within 14 days is refused (cooldown)
 - [ ] **Auto "almost there" reminder** (runs daily 16:30 UTC): to force one, run `select public.send_progress_reminders(0.0, 0)` in Supabase SQL editor → customers with part-filled cards get a "So close at …" push + feed entry (each user/merchant pair is then on the shared 14-day cooldown)
 
