@@ -8,7 +8,7 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { supabase } from '@/lib/supabase';
-import { revalidateCache } from '@/lib/dataCache';
+import { revalidateCache, revalidateCachePrefix } from '@/lib/dataCache';
 import { FontFamily, Palette as J, Shadow } from '@/constants/theme';
 
 type LiveNotification = {
@@ -21,6 +21,8 @@ type LiveNotification = {
 // The surfaces that show stamp/reward state — refreshed in place the instant
 // a notification lands, so the card animates without a manual pull-to-refresh.
 const LIVE_KEYS = ['home', 'my-cards', 'notifications', 'rewards', 'profile'];
+// Dynamic per-id screens (open card / merchant detail) refreshed by prefix.
+const LIVE_KEY_PREFIXES = ['card-detail:', 'merchant:'];
 
 function visualsFor(type: string): { icon: React.ComponentProps<typeof Ionicons>['name']; color: string } {
   if (type === 'reward_earned') return { icon: 'gift', color: J.amber };
@@ -74,8 +76,10 @@ export function LiveNotifications({ userId }: { userId: string | undefined }) {
         { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${userId}` },
         (payload) => {
           const n = payload.new as LiveNotification;
-          // Refresh visible screens so the card reflects the new stamp/reward
+          // Refresh visible screens so the card reflects the new stamp/reward,
+          // including an open card-detail or merchant-detail screen
           revalidateCache(...LIVE_KEYS);
+          revalidateCachePrefix(...LIVE_KEY_PREFIXES);
           // Haptic: notificationAsync is the most reliable generator on iOS — a
           // one-shot impactAsync can be dropped when the Taptic engine is idle
           // between events, which is why the Medium tap wasn't felt. Every

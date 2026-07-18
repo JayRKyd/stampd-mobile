@@ -22,6 +22,20 @@ export function revalidateCache(...keys: string[]) {
   }
 }
 
+/**
+ * Revalidate every registered key that starts with one of these prefixes.
+ * For dynamic keys like `card-detail:<id>` / `merchant:<id>` whose exact
+ * value isn't known at call time.
+ */
+export function revalidateCachePrefix(...prefixes: string[]) {
+  for (const [key, set] of refreshers) {
+    if (prefixes.some(p => key.startsWith(p))) {
+      memory.delete(key);
+      set.forEach(fn => fn());
+    }
+  }
+}
+
 export function useCachedData<T>(key: string, fetcher: () => Promise<T | null>) {
   const [data, setData] = useState<T | null>(() => (memory.get(key) as T) ?? null);
   const [isLoading, setIsLoading] = useState(!memory.has(key));
