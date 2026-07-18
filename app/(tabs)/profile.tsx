@@ -1,12 +1,14 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
-  Modal, TextInput, KeyboardAvoidingView, Platform,
+  Modal, TextInput, KeyboardAvoidingView, Platform, AppState, Linking,
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import * as Notifications from 'expo-notifications';
 import { supabase } from '@/lib/supabase';
+import { registerPushToken } from '@/lib/pushNotifications';
 import { useCachedData } from '@/lib/dataCache';
 import { Colors, FontFamily, Palette as J, Shadow } from '@/constants/theme';
 import { PinCard } from '@/components/PinCard';
@@ -22,6 +24,30 @@ export default function ProfileScreen() {
   const [deleteVisible, setDeleteVisible] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [deleteError, setDeleteError] = useState('');
+  const [pushGranted, setPushGranted] = useState<boolean | null>(null);
+
+  // iOS shows the permission prompt exactly once — after that, users who
+  // denied (or toggled off) can only re-enable in Settings. Surface that
+  // state here with a direct link, and register the token the moment they
+  // come back with it granted.
+  const checkPushPermission = useCallback(async () => {
+    try {
+      const { status } = await Notifications.getPermissionsAsync();
+      setPushGranted(status === 'granted');
+      if (status === 'granted') registerPushToken().catch(() => {});
+    } catch {
+      // leave state unknown — never block the profile screen on this
+    }
+  }, []);
+
+  useFocusEffect(useCallback(() => { checkPushPermission(); }, [checkPushPermission]));
+
+  useEffect(() => {
+    const sub = AppState.addEventListener('change', (state) => {
+      if (state === 'active') checkPushPermission();
+    });
+    return () => sub.remove();
+  }, [checkPushPermission]);
 
   const { data: profData, refresh } = useCachedData('profile', async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -153,6 +179,23 @@ export default function ProfileScreen() {
             </View>
             <Ionicons name="chevron-forward" size={16} color={J.inkSoft} />
           </TouchableOpacity>
+
+          {/* Push permission is off — one tap to the iOS settings page */}
+          {pushGranted === false && (
+            <TouchableOpacity
+              style={s.pushOffCard}
+              onPress={() => Linking.openSettings()}
+              activeOpacity={0.85}
+            >
+              <Ionicons name="notifications-off-outline" size={17} color={J.amber} />
+              <Text style={s.pushOffText}>
+                Push notifications are off — you'll miss reward alerts.
+              </Text>
+              <View style={s.pushOffBtn}>
+                <Text style={s.pushOffBtnText}>Turn on</Text>
+              </View>
+            </TouchableOpacity>
+          )}
 
           {/* Account */}
           <Text style={s.sectionLabel}>ACCOUNT</Text>
@@ -351,6 +394,34 @@ const s = StyleSheet.create({
   },
   notifLabel: { fontSize: 15, fontFamily: FontFamily.semibold, color: J.ink },
   notifSub: { fontSize: 12, fontFamily: FontFamily.regular, color: J.inkSoft, marginTop: 2 },
+
+  pushOffCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    backgroundColor: 'rgba(245,166,35,0.10)',
+    borderWidth: 1,
+    borderColor: 'rgba(245,166,35,0.35)',
+    borderRadius: 14,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    marginTop: -14,
+    marginBottom: 24,
+  },
+  pushOffText: {
+    flex: 1,
+    fontSize: 12,
+    fontFamily: FontFamily.medium,
+    color: J.ink,
+    lineHeight: 17,
+  },
+  pushOffBtn: {
+    backgroundColor: J.amber,
+    borderRadius: 12,
+    paddingVertical: 7,
+    paddingHorizontal: 12,
+  },
+  pushOffBtnText: { fontSize: 12, fontFamily: FontFamily.bold, color: '#fff' },
 
   // Account
   sectionLabel: {
