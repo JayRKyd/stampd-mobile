@@ -4,12 +4,16 @@ import * as Notifications from 'expo-notifications';
 import Constants from 'expo-constants';
 import { supabase } from '@/lib/supabase';
 
+// Foreground: the in-app LiveNotifications toast (driven by realtime) handles
+// the on-screen moment, so suppress the OS banner to avoid showing both. The
+// notification still lands in the tray/list for history. When the app is
+// backgrounded, iOS shows the push normally — this handler doesn't run then.
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: true,
+    shouldShowAlert: false,
+    shouldPlaySound: false,
     shouldSetBadge: false,
-    shouldShowBanner: true,
+    shouldShowBanner: false,
     shouldShowList: true,
   }),
 });

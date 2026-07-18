@@ -18,6 +18,7 @@ import { createSessionFromAuthUrl, isAuthCallbackUrl } from '@/lib/authDeepLink'
 import { registerPushToken } from '@/lib/pushNotifications';
 import { profileNamesComplete } from '@/lib/ensureProfile';
 import { clearDataCache } from '@/lib/dataCache';
+import { LiveNotifications } from '@/components/LiveNotifications';
 import { Colors } from '@/constants/theme';
 
 SplashScreen.preventAutoHideAsync();
@@ -144,6 +145,8 @@ function RootLayout() {
     <SafeAreaProvider>
       <StatusBar style="light" />
       <Stack screenOptions={{ headerShown: false, animation: 'fade' }} />
+      {/* Live in-app toast for stamps/rewards, over every screen while signed in */}
+      <LiveNotifications userId={session?.user?.id} />
     </SafeAreaProvider>
   );
 }
