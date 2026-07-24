@@ -1,5 +1,8 @@
 import { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal, ActivityIndicator } from 'react-native';
+import {
+  View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal,
+  ActivityIndicator, Dimensions, NativeSyntheticEvent, NativeScrollEvent,
+} from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -28,6 +31,12 @@ type NextUp = {
   left: number;
   visit_label: string | null;
 } | null;
+
+const SCREEN_W = Dimensions.get('window').width;
+// Narrower than the sheet so the next ticket peeks in — the visual cue that
+// there's more to swipe
+const TICKET_W = SCREEN_W - 64;
+const TICKET_GAP = 12;
 
 function brandOf(r: Reward): string {
   const color = r.merchants.loyalty_cards?.[0]?.card_color;
@@ -94,6 +103,12 @@ export default function RewardsScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const [selected, setSelected] = useState<Reward | null>(null);
+  const [ticketIndex, setTicketIndex] = useState(0);
+
+  const onTicketScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const idx = Math.round(e.nativeEvent.contentOffset.x / (TICKET_W + TICKET_GAP));
+    if (idx !== ticketIndex) setTicketIndex(idx);
+  };
 
   const { data: rwData, isLoading: loading } = useCachedData('rewards', async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -196,44 +211,72 @@ export default function RewardsScreen() {
                 <Ionicons name="arrow-forward" size={15} color="#fff" />
               </TouchableOpacity>
             </View>
-          ) : rewards.map(r => {
-            const expires = new Date(r.expires_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-            const brand = brandOf(r);
-            const light = isLight(brand);
-            const textColor = light ? shadeColor(brand, 0.3) : '#fff';
-            const dashColor = light ? 'rgba(0,0,0,0.25)' : 'rgba(255,255,255,0.35)';
+          ) : (() => {
+            const renderTicket = (r: Reward, extraStyle?: object) => {
+              const expires = new Date(r.expires_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+              const brand = brandOf(r);
+              const light = isLight(brand);
+              const textColor = light ? shadeColor(brand, 0.3) : '#fff';
+              const dashColor = light ? 'rgba(0,0,0,0.25)' : 'rgba(255,255,255,0.35)';
+              return (
+                <TouchableOpacity
+                  key={r.id}
+                  onPress={() => setSelected(r)}
+                  activeOpacity={0.9}
+                  style={[s.ticket, { backgroundColor: brand }, extraStyle]}
+                >
+                  {/* Main section */}
+                  <View style={s.ticketMain}>
+                    <Text style={[s.ticketFrom, { color: textColor, opacity: 0.75 }]} numberOfLines={1}>
+                      {r.merchants.business_name.toUpperCase()}
+                    </Text>
+                    <Text style={[s.ticketTitle, { color: textColor }]} numberOfLines={2}>{r.reward_title}</Text>
+                    <Text style={[s.ticketExpiry, { color: textColor, opacity: 0.65 }]}>Expires {expires}</Text>
+                  </View>
+
+                  {/* Perforation with side notches */}
+                  <View style={s.perfRow}>
+                    <View style={[s.notch, { left: -9 }]} />
+                    <View style={[s.dash, { borderTopColor: dashColor }]} />
+                    <View style={[s.notch, { right: -9 }]} />
+                  </View>
+
+                  {/* Redeem stub */}
+                  <View style={s.ticketStub}>
+                    <Ionicons name="gift" size={15} color={light ? Colors.goldDark : Colors.gold} />
+                    <Text style={[s.ticketStubText, { color: textColor }]}>Tap to redeem</Text>
+                    <Ionicons name="chevron-forward" size={14} color={textColor} style={{ opacity: 0.7 }} />
+                  </View>
+                </TouchableOpacity>
+              );
+            };
+
+            if (rewards.length === 1) return renderTicket(rewards[0]);
+
+            // Multiple tickets: swipe between them, next one peeking in
             return (
-              <TouchableOpacity
-                key={r.id}
-                onPress={() => setSelected(r)}
-                activeOpacity={0.9}
-                style={[s.ticket, { backgroundColor: brand }]}
-              >
-                {/* Main section */}
-                <View style={s.ticketMain}>
-                  <Text style={[s.ticketFrom, { color: textColor, opacity: 0.75 }]} numberOfLines={1}>
-                    {r.merchants.business_name.toUpperCase()}
-                  </Text>
-                  <Text style={[s.ticketTitle, { color: textColor }]} numberOfLines={2}>{r.reward_title}</Text>
-                  <Text style={[s.ticketExpiry, { color: textColor, opacity: 0.65 }]}>Expires {expires}</Text>
+              <>
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  decelerationRate="fast"
+                  snapToInterval={TICKET_W + TICKET_GAP}
+                  snapToAlignment="start"
+                  onScroll={onTicketScroll}
+                  scrollEventThrottle={16}
+                  style={s.ticketScroll}
+                  contentContainerStyle={s.ticketScrollContent}
+                >
+                  {rewards.map(r => renderTicket(r, { width: TICKET_W, marginBottom: 0 }))}
+                </ScrollView>
+                <View style={s.dotsRow}>
+                  {rewards.map((_, i) => (
+                    <View key={i} style={[s.dot, i === ticketIndex && s.dotActive]} />
+                  ))}
                 </View>
-
-                {/* Perforation with side notches */}
-                <View style={s.perfRow}>
-                  <View style={[s.notch, { left: -9 }]} />
-                  <View style={[s.dash, { borderTopColor: dashColor }]} />
-                  <View style={[s.notch, { right: -9 }]} />
-                </View>
-
-                {/* Redeem stub */}
-                <View style={s.ticketStub}>
-                  <Ionicons name="gift" size={15} color={light ? Colors.goldDark : Colors.gold} />
-                  <Text style={[s.ticketStubText, { color: textColor }]}>Tap to redeem</Text>
-                  <Ionicons name="chevron-forward" size={14} color={textColor} style={{ opacity: 0.7 }} />
-                </View>
-              </TouchableOpacity>
+              </>
             );
-          })}
+          })()}
 
           {/* Cards stay reachable once rewards fill this page */}
           {!loading && rewards.length > 0 && (
@@ -415,6 +458,16 @@ const s = StyleSheet.create({
     paddingHorizontal: 18, paddingTop: 8, paddingBottom: 14,
   },
   ticketStubText: { fontSize: 13, fontFamily: FontFamily.bold, flex: 1 },
+
+  // Ticket carousel (2+ pending rewards)
+  ticketScroll: { marginHorizontal: -20 },
+  ticketScrollContent: { paddingHorizontal: 20, gap: TICKET_GAP },
+  dotsRow: {
+    flexDirection: 'row', justifyContent: 'center', gap: 6,
+    marginTop: 12, marginBottom: 2,
+  },
+  dot: { width: 6, height: 6, borderRadius: 3, backgroundColor: 'rgba(26,43,42,0.18)' },
+  dotActive: { backgroundColor: J.teal, width: 16 },
 
   // Quiet route back to the wallet when tickets fill the page
   cardsLinkRow: {
