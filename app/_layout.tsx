@@ -12,7 +12,7 @@ import {
 import * as SplashScreen from 'expo-splash-screen';
 import * as Sentry from '@sentry/react-native';
 import { StatusBar } from 'expo-status-bar';
-import { Linking, View } from 'react-native';
+import { Linking, View, StyleSheet } from 'react-native';
 import { supabase } from '@/lib/supabase';
 import { createSessionFromAuthUrl, isAuthCallbackUrl } from '@/lib/authDeepLink';
 import { registerPushToken } from '@/lib/pushNotifications';
@@ -141,6 +141,18 @@ function RootLayout() {
   if (!booted)
     return <View style={{ flex: 1, backgroundColor: Colors.background }} />;
 
+  // The navigator mounts on its initial route and the guard effect redirects a
+  // beat later — on Android that beat is visible (welcome page blinks past on
+  // cold start while signed in). Cover the navigator in brand teal (matching
+  // the native splash) until navigation is standing on the right screen.
+  const inAuthNow = segments[0] === '(auth)';
+  const onCompleteProfileNow = (segments as string[]).includes('complete-profile');
+  const navSettled = !session
+    ? inAuthNow
+    : !profileReady
+    ? onCompleteProfileNow
+    : !inAuthNow;
+
   return (
     <SafeAreaProvider>
       <StatusBar style="light" />
@@ -157,6 +169,15 @@ function RootLayout() {
       />
       {/* Live in-app toast for stamps/rewards, over every screen while signed in */}
       <LiveNotifications userId={session?.user?.id} />
+      {!navSettled && (
+        <View
+          style={{
+            ...StyleSheet.absoluteFillObject,
+            backgroundColor: Palette.teal,
+            zIndex: 2000,
+          }}
+        />
+      )}
     </SafeAreaProvider>
   );
 }
