@@ -98,7 +98,7 @@ export default function DiscoverScreen() {
           </View>
           <TouchableOpacity
             style={s.headerBell}
-            onPress={() => router.push('/notifications')}
+            onPress={() => router.navigate('/notifications')}
             activeOpacity={0.7}
           >
             <Ionicons name="notifications-outline" size={20} color="#fff" />
@@ -214,7 +214,7 @@ export default function DiscoverScreen() {
               <TouchableOpacity
                 key={m.id}
                 style={s.card}
-                onPress={() => router.push(`/discover/${m.id}`)}
+                onPress={() => router.navigate(`/discover/${m.id}`)}
                 activeOpacity={0.92}
               >
                 <View style={s.cardInner}>

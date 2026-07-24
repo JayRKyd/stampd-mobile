@@ -27,7 +27,7 @@ export default function PhoneScreen() {
     const fullPhone = `+1${digits}`;
     const { error } = await supabase.auth.signInWithOtp({ phone: fullPhone });
     if (error) { setError(error.message); setLoading(false); return; }
-    router.push({ pathname: '/(auth)/verify', params: { phone: fullPhone } });
+    router.navigate({ pathname: '/(auth)/verify', params: { phone: fullPhone } });
     setLoading(false);
   }
 

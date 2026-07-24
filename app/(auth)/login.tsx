@@ -272,7 +272,7 @@ export default function LoginScreen() {
         {mode === 'signin' && (
           <TouchableOpacity
             style={s.forgotLink}
-            onPress={() => router.push({ pathname: '/(auth)/forgot-password', params: email ? { email } : undefined })}
+            onPress={() => router.navigate({ pathname: '/(auth)/forgot-password', params: email ? { email } : undefined })}
             activeOpacity={0.7}
           >
             <Text style={s.forgotLinkText}>Forgot password?</Text>

@@ -115,7 +115,7 @@ export function LiveNotifications({ userId }: { userId: string | undefined }) {
     >
       <Pressable
         style={s.card}
-        onPress={() => { dismiss(); router.push('/notifications'); }}
+        onPress={() => { dismiss(); router.navigate('/notifications'); }}
         accessibilityRole="button"
         accessibilityLabel={`${toast.title}. ${toast.body}`}
       >

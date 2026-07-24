@@ -144,7 +144,7 @@ export default function HomeScreen() {
       icon: 'gift',
       iconColor: J.giftRed,
       done: totalStamps > 0,
-      onPress: () => router.push('/(tabs)/discover'),
+      onPress: () => router.navigate('/(tabs)/discover'),
     },
     {
       key: 'collect-five',
@@ -171,7 +171,7 @@ export default function HomeScreen() {
       icon: 'trophy',
       iconColor: J.amber,
       done: rewardsEarned > 0,
-      onPress: () => router.push('/(tabs)/rewards'),
+      onPress: () => router.navigate('/(tabs)/rewards'),
     },
   ];
   const completedSteps = steps.filter(st => st.done).length;
@@ -216,7 +216,7 @@ export default function HomeScreen() {
           <View style={s.heyRow}>
             <Text style={s.hey}>Hey {greeting}</Text>
             <TouchableOpacity
-              onPress={() => router.push('/(tabs)/profile')}
+              onPress={() => router.navigate('/(tabs)/profile')}
               activeOpacity={0.7}
               hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             >
@@ -253,7 +253,7 @@ export default function HomeScreen() {
                   pauseHeroAutoplay();
                   heroScrollRef.current?.scrollTo({ x: heroCards.length * (HERO_W + HERO_GAP), animated: true });
                 } else {
-                  router.push('/my-cards');
+                  router.navigate('/my-cards');
                 }
               }}
             >
@@ -289,7 +289,7 @@ export default function HomeScreen() {
                   <TouchableOpacity
                     key={m.id}
                     activeOpacity={0.9}
-                    onPress={() => router.push(`/card/${m.id}`)}
+                    onPress={() => router.navigate(`/card/${m.id}`)}
                     style={[s.heroCard, { width: HERO_W }]}
                   >
                     <View style={s.heroLeft}>
@@ -393,7 +393,7 @@ export default function HomeScreen() {
                 <TouchableOpacity
                   style={s.banner}
                   activeOpacity={0.9}
-                  onPress={() => router.push('/(tabs)/discover')}
+                  onPress={() => router.navigate('/(tabs)/discover')}
                 >
                   <View style={s.bannerTextWrap}>
                     <Text style={s.bannerText}>Shop and earn rewards, treats, and free stuff from local spots!</Text>
@@ -437,7 +437,7 @@ export default function HomeScreen() {
                 <Text style={s.pinFooterHint}>Tap card to copy · Show when you pay</Text>
                 <TouchableOpacity
                   style={s.historyLink}
-                  onPress={() => router.push('/history')}
+                  onPress={() => router.navigate('/history')}
                   activeOpacity={0.7}
                 >
                   <Ionicons name="time-outline" size={13} color={J.teal} />
@@ -458,7 +458,7 @@ export default function HomeScreen() {
                   </Text>
                   <TouchableOpacity
                     style={s.emptyButton}
-                    onPress={() => router.push('/(tabs)/discover')}
+                    onPress={() => router.navigate('/(tabs)/discover')}
                     activeOpacity={0.8}
                   >
                     <Text style={s.emptyButtonText}>Browse places on Stampd</Text>
@@ -480,7 +480,7 @@ export default function HomeScreen() {
                       logoUrl={m.merchants.logo_url}
                       stampIcon={m.loyalty_cards?.stamp_icon}
                       visitLabel={m.loyalty_cards?.visit_label}
-                      onPress={() => router.push(`/card/${m.id}`)}
+                      onPress={() => router.navigate(`/card/${m.id}`)}
                     />
                   ))}
                 </View>

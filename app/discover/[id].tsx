@@ -352,7 +352,7 @@ export default function MerchantDetailScreen() {
                   </View>
                 </View>
 
-                <TouchableOpacity onPress={() => router.push('/(tabs)/')} activeOpacity={0.85} style={s.joinBtn}>
+                <TouchableOpacity onPress={() => router.navigate('/(tabs)/')} activeOpacity={0.85} style={s.joinBtn}>
                   <Ionicons name="key-outline" size={18} color="#fff" />
                   <Text style={s.joinBtnText}>Show my PIN</Text>
                 </TouchableOpacity>
@@ -369,7 +369,7 @@ export default function MerchantDetailScreen() {
                   currentStamps={0}
                   totalRequired={card.stamp_count_required}
                   rewardTitle={card.reward_title}
-                  onPress={() => router.push('/(tabs)/')}
+                  onPress={() => router.navigate('/(tabs)/')}
                   cardColor={card.card_color}
                   gradientIndex={id ? id.charCodeAt(0) : 0}
                   logoUrl={merchant.logo_url}
@@ -389,7 +389,7 @@ export default function MerchantDetailScreen() {
               <Ionicons name="bulb-outline" size={16} color={J.teal} style={{ flexShrink: 0, marginTop: 1 }} />
               <Text style={s.pinReminderText}>
                 {'Your PIN is on the '}
-                <Text style={s.pinReminderLink} onPress={() => router.push('/(tabs)/')}>
+                <Text style={s.pinReminderLink} onPress={() => router.navigate('/(tabs)/')}>
                   Home tab
                 </Text>
                 {' — show it when you pay to get your first stamp'}

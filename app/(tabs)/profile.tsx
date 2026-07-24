@@ -167,7 +167,7 @@ export default function ProfileScreen() {
           {/* Notifications */}
           <TouchableOpacity
             style={s.notifRow}
-            onPress={() => router.push('/notifications')}
+            onPress={() => router.navigate('/notifications')}
             activeOpacity={0.8}
           >
             <View style={s.notifIcon}>

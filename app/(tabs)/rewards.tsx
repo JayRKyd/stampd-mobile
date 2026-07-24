@@ -171,7 +171,7 @@ export default function RewardsScreen() {
               </Text>
               <TouchableOpacity
                 style={s.emptyButton}
-                onPress={() => router.push('/my-cards')}
+                onPress={() => router.navigate('/my-cards')}
                 activeOpacity={0.8}
               >
                 <Text style={s.emptyButtonText}>View your cards</Text>

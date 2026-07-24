@@ -56,7 +56,7 @@ export default function WelcomeScreen() {
         <View style={s.btnRow}>
           <TouchableOpacity
             style={s.btnPrimary}
-            onPress={() => router.push({ pathname: '/(auth)/login', params: { mode: 'signup' } })}
+            onPress={() => router.navigate({ pathname: '/(auth)/login', params: { mode: 'signup' } })}
             activeOpacity={0.9}
           >
             <Text style={s.btnPrimaryText}>Sign up</Text>
@@ -67,7 +67,7 @@ export default function WelcomeScreen() {
 
           <TouchableOpacity
             style={s.btnSecondary}
-            onPress={() => router.push({ pathname: '/(auth)/login', params: { mode: 'signin' } })}
+            onPress={() => router.navigate({ pathname: '/(auth)/login', params: { mode: 'signin' } })}
             activeOpacity={0.9}
           >
             <Text style={s.btnSecondaryText}>Sign in</Text>

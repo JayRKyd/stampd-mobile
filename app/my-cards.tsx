@@ -105,7 +105,7 @@ export default function MyCardsScreen() {
             </Text>
             <TouchableOpacity
               style={s.emptyButton}
-              onPress={() => router.push('/(tabs)/discover')}
+              onPress={() => router.navigate('/(tabs)/discover')}
               activeOpacity={0.8}
             >
               <Text style={s.emptyButtonText}>Browse places on Stampd</Text>
@@ -148,7 +148,7 @@ export default function MyCardsScreen() {
                   stampIcon={m.loyalty_cards?.stamp_icon}
                   visitLabel={m.loyalty_cards?.visit_label}
                   collapsed={!expanded}
-                  onPress={() => (expanded ? router.push(`/card/${m.id}`) : setExpandedId(m.id))}
+                  onPress={() => (expanded ? router.navigate(`/card/${m.id}`) : setExpandedId(m.id))}
                 />
               </Animated.View>
             );
