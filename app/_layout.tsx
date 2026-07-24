@@ -144,12 +144,14 @@ function RootLayout() {
   return (
     <SafeAreaProvider>
       <StatusBar style="light" />
-      {/* contentStyle: the layer behind screens during transitions defaults
-          to white, which reads as a flash between our cream pages */}
+      {/* slide, not fade: a cross-fade dips through the backing layer for a
+          few frames (the "white flash"); a slide covers the old screen with
+          the new one, so the background never shows. contentStyle stays cream
+          as the backstop for slow first mounts. */}
       <Stack
         screenOptions={{
           headerShown: false,
-          animation: 'fade',
+          animation: 'slide_from_right',
           contentStyle: { backgroundColor: Palette.cream },
         }}
       />

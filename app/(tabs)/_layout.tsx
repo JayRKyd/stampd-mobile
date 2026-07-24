@@ -29,6 +29,9 @@ export default function TabsLayout() {
   return (
     <Tabs screenOptions={({ route }) => ({
       headerShown: false,
+      // Tab scenes also sit on a white layer by default — first visits to a
+      // lazily-mounted tab flashed white before the screen painted
+      sceneStyle: { backgroundColor: Palette.cream },
       tabBarStyle: [
         s.tabBar,
         {
