@@ -467,6 +467,19 @@ export default function HomeScreen() {
                 </View>
               ) : (
                 <View style={s.cardsList}>
+                  {/* Route to the full wallet stays visible with rewards or not */}
+                  <View style={s.cardsHeadRow}>
+                    <Text style={s.cardsHeadLabel}>YOUR CARDS</Text>
+                    <TouchableOpacity
+                      onPress={() => router.navigate('/my-cards')}
+                      activeOpacity={0.7}
+                      style={s.walletLink}
+                      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                    >
+                      <Text style={s.walletLinkText}>Open wallet</Text>
+                      <Ionicons name="chevron-forward" size={13} color={J.teal} />
+                    </TouchableOpacity>
+                  </View>
                   {memberships.map((m, i) => (
                     <StampCard
                       key={m.id}
@@ -695,6 +708,10 @@ const s = StyleSheet.create({
   historyLinkText: { fontSize: 12, fontFamily: FontFamily.bold, color: J.teal },
 
   cardsList: { gap: 14 },
+  cardsHeadRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: -2 },
+  cardsHeadLabel: { fontSize: 11, fontFamily: FontFamily.semibold, color: J.inkSoft, letterSpacing: 0.8 },
+  walletLink: { flexDirection: 'row', alignItems: 'center', gap: 2 },
+  walletLinkText: { fontSize: 13, fontFamily: FontFamily.bold, color: J.teal },
 
   emptyCards: {
     backgroundColor: '#fff',

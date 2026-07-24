@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '@/lib/supabase';
 import { useCachedData } from '@/lib/dataCache';
@@ -46,6 +45,9 @@ function VoucherModal({ reward, onClose }: { reward: Reward | null; onClose: () 
   const expires = new Date(reward.expires_at).toLocaleDateString('en-US', {
     month: 'short', day: 'numeric', year: 'numeric'
   });
+  // Same ticket anatomy as the list, in reward gold. Gold is a light brand,
+  // so text follows the adaptive rule: darkened gold, not white.
+  const goldText = shadeColor(Colors.gold, 0.45);
 
   return (
     <Modal visible={!!reward} animationType="slide" transparent onRequestClose={onClose}>
@@ -57,12 +59,28 @@ function VoucherModal({ reward, onClose }: { reward: Reward | null; onClose: () 
           </View>
           <Text style={s.sheetTitle}>Show this to redeem</Text>
           <Text style={s.sheetSub}>{reward.merchants.business_name}</Text>
-          <LinearGradient colors={[Colors.gold, Colors.goldDark]} style={s.voucher} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
-            <View style={s.voucherGloss} />
-            <Text style={s.voucherFrom}>{reward.merchants.business_name}</Text>
-            <Text style={s.voucherReward}>{reward.reward_title}</Text>
-            <Text style={s.voucherExpiry}>Expires {expires}</Text>
-          </LinearGradient>
+
+          <View style={[s.ticket, { backgroundColor: Colors.gold, width: '100%', marginBottom: 0 }]}>
+            <View style={s.ticketMain}>
+              <Text style={[s.ticketFrom, { color: goldText, opacity: 0.75 }]} numberOfLines={1}>
+                {reward.merchants.business_name.toUpperCase()}
+              </Text>
+              <Text style={[s.ticketTitle, { color: goldText }]} numberOfLines={2}>{reward.reward_title}</Text>
+              <Text style={[s.ticketExpiry, { color: goldText, opacity: 0.7 }]}>Expires {expires}</Text>
+            </View>
+            <View style={s.perfRow}>
+              <View style={[s.notch, { left: -9, backgroundColor: '#fff' }]} />
+              <View style={[s.dash, { borderTopColor: 'rgba(0,0,0,0.25)' }]} />
+              <View style={[s.notch, { right: -9, backgroundColor: '#fff' }]} />
+            </View>
+            <View style={s.ticketStub}>
+              <Ionicons name="gift" size={15} color={goldText} />
+              <Text style={[s.ticketStubText, { color: goldText }]}>
+                Staff will mark it redeemed at the counter
+              </Text>
+            </View>
+          </View>
+
           <TouchableOpacity style={s.doneBtn} onPress={onClose}>
             <Text style={s.doneBtnText}>Done</Text>
           </TouchableOpacity>
@@ -217,26 +235,46 @@ export default function RewardsScreen() {
             );
           })}
 
-          {/* How it works */}
-          <Text style={[s.sectionLabel, { marginTop: Spacing.xxl }]}>HOW IT WORKS</Text>
-          <View style={s.stepsCard}>
-            {[
-              { label: 'Show your PIN', desc: 'Give the cashier your member PIN when you pay.' },
-              { label: 'Fill your card', desc: 'Each visit earns a stamp toward the reward.' },
-              { label: 'Redeem', desc: 'Card full? Show your reward at the counter.' },
-            ].map((step, i, arr) => (
-              <View key={step.label}>
-                <View style={s.step}>
-                  <Text style={s.stepNum}>{`0${i + 1}`}</Text>
-                  <View style={s.stepBody}>
-                    <Text style={s.stepLabel}>{step.label}</Text>
-                    <Text style={s.stepDesc}>{step.desc}</Text>
-                  </View>
-                </View>
-                {i < arr.length - 1 && <View style={s.stepDivider} />}
+          {/* Cards stay reachable once rewards fill this page */}
+          {!loading && rewards.length > 0 && (
+            <TouchableOpacity
+              style={s.cardsLinkRow}
+              onPress={() => router.navigate('/my-cards')}
+              activeOpacity={0.8}
+            >
+              <View style={s.cardsLinkIcon}>
+                <Ionicons name="albums-outline" size={17} color={J.teal} />
               </View>
-            ))}
-          </View>
+              <Text style={s.cardsLinkText}>View your cards</Text>
+              <Ionicons name="chevron-forward" size={15} color={J.inkSoft} />
+            </TouchableOpacity>
+          )}
+
+          {/* How it works — for people who haven't earned a reward yet.
+              Once they have, they know; History takes this spot instead. */}
+          {rewards.length === 0 && history.length === 0 && (
+            <>
+              <Text style={[s.sectionLabel, { marginTop: Spacing.xxl }]}>HOW IT WORKS</Text>
+              <View style={s.stepsCard}>
+                {[
+                  { label: 'Show your PIN', desc: 'Give the cashier your member PIN when you pay.' },
+                  { label: 'Fill your card', desc: 'Each visit earns a stamp toward the reward.' },
+                  { label: 'Redeem', desc: 'Card full? Show your reward at the counter.' },
+                ].map((step, i, arr) => (
+                  <View key={step.label}>
+                    <View style={s.step}>
+                      <Text style={s.stepNum}>{`0${i + 1}`}</Text>
+                      <View style={s.stepBody}>
+                        <Text style={s.stepLabel}>{step.label}</Text>
+                        <Text style={s.stepDesc}>{step.desc}</Text>
+                      </View>
+                    </View>
+                    {i < arr.length - 1 && <View style={s.stepDivider} />}
+                  </View>
+                ))}
+              </View>
+            </>
+          )}
 
           {/* History */}
           {history.length > 0 && (
@@ -378,6 +416,20 @@ const s = StyleSheet.create({
   },
   ticketStubText: { fontSize: 13, fontFamily: FontFamily.bold, flex: 1 },
 
+  // Quiet route back to the wallet when tickets fill the page
+  cardsLinkRow: {
+    flexDirection: 'row', alignItems: 'center', gap: 10,
+    backgroundColor: '#fff', borderRadius: 16,
+    paddingVertical: 13, paddingHorizontal: 16,
+    marginTop: 2, ...Shadow.sm,
+  },
+  cardsLinkIcon: {
+    width: 32, height: 32, borderRadius: 10,
+    backgroundColor: 'rgba(0,96,90,0.08)',
+    alignItems: 'center', justifyContent: 'center',
+  },
+  cardsLinkText: { flex: 1, fontSize: 14, fontFamily: FontFamily.semibold, color: J.ink },
+
   // Steps — editorial numerals, no icon chips
   stepsCard: { backgroundColor: '#fff', borderRadius: 20, paddingHorizontal: 20, ...Shadow.sm },
   step: { flexDirection: 'row', alignItems: 'flex-start', paddingVertical: 18, gap: 16 },
@@ -422,11 +474,6 @@ const s = StyleSheet.create({
   },
   sheetTitle: { fontSize: 20, fontFamily: FontFamily.extrabold, color: J.ink, letterSpacing: -0.3 },
   sheetSub: { fontSize: 13, fontFamily: FontFamily.regular, color: J.inkSoft },
-  voucher: { width: '100%', borderRadius: 20, padding: Spacing.xxl, overflow: 'hidden', ...Shadow.card },
-  voucherGloss: { position: 'absolute', top: 0, left: 0, right: 0, height: '50%', backgroundColor: 'rgba(255,255,255,0.15)' },
-  voucherFrom: { fontSize: 11, fontFamily: FontFamily.bold, color: 'rgba(255,255,255,0.7)', textTransform: 'uppercase', letterSpacing: 1, marginBottom: Spacing.sm },
-  voucherReward: { fontSize: 24, fontFamily: FontFamily.extrabold, color: '#fff', marginBottom: Spacing.sm, letterSpacing: -0.5 },
-  voucherExpiry: { fontSize: 12, fontFamily: FontFamily.regular, color: 'rgba(255,255,255,0.7)' },
   doneBtn: { width: '100%', backgroundColor: J.teal, borderRadius: 22, padding: Spacing.lg, alignItems: 'center' },
   doneBtnText: { fontSize: 15, fontFamily: FontFamily.bold, color: '#fff' },
 });
