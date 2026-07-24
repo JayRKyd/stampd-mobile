@@ -358,7 +358,9 @@ export default function MerchantDetailScreen() {
                 </TouchableOpacity>
               </View>
 
-              {/* Preview of the card they'd be collecting on */}
+              {/* Preview of the card they'd be collecting on. Tapping it acts
+                  like the Show-my-PIN CTA — a big card that ignores taps
+                  reads as broken. */}
               <View style={s.stampCardWrap}>
                 <Text style={s.previewLabel}>THE CARD</Text>
                 <StampCard
@@ -367,6 +369,7 @@ export default function MerchantDetailScreen() {
                   currentStamps={0}
                   totalRequired={card.stamp_count_required}
                   rewardTitle={card.reward_title}
+                  onPress={() => router.push('/(tabs)/')}
                   cardColor={card.card_color}
                   gradientIndex={id ? id.charCodeAt(0) : 0}
                   logoUrl={merchant.logo_url}
