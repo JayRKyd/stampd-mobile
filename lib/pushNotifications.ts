@@ -22,6 +22,17 @@ Notifications.setNotificationHandler({
 export async function registerPushToken(): Promise<void> {
   if (!Device.isDevice) return;
 
+  // Android 8+ requires a channel or delivered pushes are silently dropped.
+  // 'default' is what Expo's push service targets when no channelId is set.
+  if (Platform.OS === 'android') {
+    await Notifications.setNotificationChannelAsync('default', {
+      name: 'Stamps & rewards',
+      importance: Notifications.AndroidImportance.MAX,
+      vibrationPattern: [0, 250, 250, 250],
+      lightColor: '#00605A',
+    }).catch(() => {});
+  }
+
   const { status: existing } = await Notifications.getPermissionsAsync();
   let finalStatus = existing;
   if (existing !== 'granted') {
