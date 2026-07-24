@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, TextInput,
-  KeyboardAvoidingView, Platform, ScrollView, Linking,
+  KeyboardAvoidingView, Platform, ScrollView, Linking, AppState,
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -29,7 +29,43 @@ export default function LoginScreen() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(authError ?? '');
   const [confirmed, setConfirmed] = useState(false);
+  const [confirmHint, setConfirmHint] = useState('');
   const [legalAccepted, setLegalAccepted] = useState(false);
+  const attemptingRef = useRef(false);
+
+  // After signup the user leaves to tap the email link (verified on the web),
+  // then switches back. Try their in-memory credentials the moment the app
+  // foregrounds: if the email is now confirmed they're signed in without
+  // retyping anything — and the password is never shown in a field.
+  async function attemptConfirmedSignIn(manual: boolean) {
+    if (attemptingRef.current || !email || !password) return;
+    attemptingRef.current = true;
+    if (manual) setLoading(true);
+    const { error: signInErr } = await supabase.auth.signInWithPassword({ email, password });
+    attemptingRef.current = false;
+    setLoading(false);
+    if (!signInErr) {
+      setPassword('');
+      router.replace('/(tabs)');
+      return;
+    }
+    if (manual) {
+      setConfirmHint(
+        signInErr.message.toLowerCase().includes('confirm')
+          ? "Your email isn't confirmed yet — tap the link in your inbox first."
+          : 'Could not sign in — try again in a moment.'
+      );
+    }
+  }
+
+  useEffect(() => {
+    if (!confirmed) return;
+    const sub = AppState.addEventListener('change', (state) => {
+      if (state === 'active') attemptConfirmedSignIn(false);
+    });
+    return () => sub.remove();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [confirmed, email, password]);
 
   async function handleSubmit() {
     if (!email || !password) { setError('Please fill in all fields'); return; }
@@ -126,13 +162,23 @@ export default function LoginScreen() {
             We sent a confirmation link to{'\n'}
             <Text style={s.confirmedEmail}>{email}</Text>
           </Text>
-          <Text style={s.confirmedHint}>Open the link, then come back and sign in.</Text>
+          <Text style={s.confirmedHint}>
+            Open the link, then come back — we'll sign you in automatically.
+          </Text>
+          {confirmHint ? <Text style={s.confirmedWarn}>{confirmHint}</Text> : null}
           <TouchableOpacity
-            style={s.primaryBtn}
-            onPress={() => { setConfirmed(false); setMode('signin'); }}
+            style={[s.primaryBtn, loading && s.primaryBtnDisabled]}
+            onPress={() => { setConfirmHint(''); attemptConfirmedSignIn(true); }}
+            disabled={loading}
             activeOpacity={0.85}
           >
-            <Text style={s.primaryBtnText}>Back to Sign In</Text>
+            <Text style={s.primaryBtnText}>{loading ? 'Signing in…' : "I've confirmed — sign me in"}</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => { setPassword(''); setConfirmHint(''); setConfirmed(false); setMode('signin'); }}
+            activeOpacity={0.7}
+          >
+            <Text style={s.confirmedBackLink}>Back to Sign In</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -459,4 +505,6 @@ const s = StyleSheet.create({
   confirmedSub: { fontSize: 14, fontFamily: FontFamily.regular, color: J.inkSoft, textAlign: 'center', lineHeight: 22 },
   confirmedEmail: { fontFamily: FontFamily.bold, color: J.teal },
   confirmedHint: { fontSize: 13, fontFamily: FontFamily.regular, color: J.inkSoft, textAlign: 'center', lineHeight: 19 },
+  confirmedWarn: { fontSize: 13, fontFamily: FontFamily.medium, color: J.amber, textAlign: 'center', lineHeight: 19 },
+  confirmedBackLink: { fontSize: 13, fontFamily: FontFamily.semibold, color: J.inkSoft, marginTop: 4 },
 });
