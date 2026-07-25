@@ -50,6 +50,9 @@ function isLight(hex: string): boolean {
 }
 
 function VoucherModal({ reward, onClose }: { reward: Reward | null; onClose: () => void }) {
+  // Sheets draw edge-to-edge on Android — pad past the system nav bar so the
+  // Done button doesn't collide with it (fixed padding left a white seam)
+  const insets = useSafeAreaInsets();
   if (!reward) return null;
   const expires = new Date(reward.expires_at).toLocaleDateString('en-US', {
     month: 'short', day: 'numeric', year: 'numeric'
@@ -61,7 +64,10 @@ function VoucherModal({ reward, onClose }: { reward: Reward | null; onClose: () 
   return (
     <Modal visible={!!reward} animationType="slide" transparent onRequestClose={onClose}>
       <TouchableOpacity style={s.overlay} activeOpacity={1} onPress={onClose}>
-        <TouchableOpacity activeOpacity={1} style={s.modalSheet}>
+        <TouchableOpacity
+          activeOpacity={1}
+          style={[s.modalSheet, { paddingBottom: Math.max(insets.bottom, 12) + 24 }]}
+        >
           <View style={s.handle} />
           <View style={s.sheetIconBox}>
             <Ionicons name="gift-outline" size={28} color={Colors.gold} />

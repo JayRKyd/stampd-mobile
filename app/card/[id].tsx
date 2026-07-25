@@ -101,11 +101,16 @@ function PinModal({
 
   const cells = Array.from({ length: 6 }, (_, i) => pin[i] || '');
   const keys = ['1','2','3','4','5','6','7','8','9','','0','⌫'];
+  // Edge-to-edge on Android: pad past the system nav bar
+  const insets = useSafeAreaInsets();
 
   return (
     <Modal visible={visible} animationType="slide" transparent onRequestClose={handleClose}>
       <TouchableOpacity style={s.modalOverlay} activeOpacity={1} onPress={handleClose}>
-        <TouchableOpacity activeOpacity={1} style={s.modalSheet}>
+        <TouchableOpacity
+          activeOpacity={1}
+          style={[s.modalSheet, { paddingBottom: Math.max(insets.bottom, 12) + 24 }]}
+        >
           <View style={s.modalHandle} />
           <Text style={s.modalTitle}>Enter Merchant PIN</Text>
           <Text style={s.modalSub}>Ask {merchantName} for their current PIN code</Text>
@@ -142,12 +147,17 @@ function PinModal({
 function RewardModal({ visible, reward, merchantName, onClose }: {
   visible: boolean; reward: Reward | null; merchantName: string; onClose: () => void;
 }) {
+  // Edge-to-edge on Android: pad past the system nav bar
+  const insets = useSafeAreaInsets();
   if (!reward) return null;
   const expires = new Date(reward.expires_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   return (
     <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
       <TouchableOpacity style={s.modalOverlay} activeOpacity={1} onPress={onClose}>
-        <TouchableOpacity activeOpacity={1} style={[s.modalSheet, { gap: Spacing.lg }]}>
+        <TouchableOpacity
+          activeOpacity={1}
+          style={[s.modalSheet, { gap: Spacing.lg, paddingBottom: Math.max(insets.bottom, 12) + 24 }]}
+        >
           <View style={s.modalHandle} />
           <View style={s.rewardIconBox}>
             <Ionicons name="gift-outline" size={32} color={Colors.gold} />
