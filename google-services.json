@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "212158926484",
+    "project_id": "stampd-bahamas",
+    "storage_bucket": "stampd-bahamas.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:212158926484:android:d1281d3d8194a87b562e81",
+        "android_client_info": {
+          "package_name": "com.stampdbahamas.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB4UJJQxfrkZQtjLb1kYNARxh35nEwuVlM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

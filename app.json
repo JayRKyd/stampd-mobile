@@ -26,6 +26,7 @@
         "backgroundColor": "#00605A"
       },
       "package": "com.stampdbahamas.app",
+      "googleServicesFile": "./google-services.json",
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false
     },
