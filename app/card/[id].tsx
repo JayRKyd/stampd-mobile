@@ -58,90 +58,6 @@ type Reward = {
   expires_at: string;
 };
 
-// ── PIN Modal ────────────────────────────────────────────────────────────────
-
-function PinModal({
-  visible, onClose, onSuccess, merchantName,
-}: {
-  visible: boolean; onClose: () => void; onSuccess: () => void; merchantName: string;
-}) {
-  const [pin, setPin] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-
-  function reset() { setPin(''); setError(''); }
-  function handleClose() { reset(); onClose(); }
-
-  function numPress(k: string) {
-    if (k === '⌫') { setPin(p => p.slice(0, -1)); setError(''); return; }
-    if (pin.length >= 6) return;
-    const next = pin + k;
-    setPin(next);
-    setError('');
-    if (next.length === 6) submitPin(next);
-  }
-
-  async function submitPin(code: string) {
-    setLoading(true);
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) { setLoading(false); return; }
-    const { data, error } = await supabase.rpc('redeem_generated_pin', { p_code: code, p_user_id: user.id });
-    if (error || !data?.success) {
-      setError(data?.error === 'invalid_or_expired_pin'
-        ? 'Invalid or expired PIN. Ask the merchant to generate a new one.'
-        : 'Something went wrong. Try again.');
-      setPin('');
-      setLoading(false);
-      return;
-    }
-    setLoading(false);
-    reset();
-    onSuccess();
-  }
-
-  const cells = Array.from({ length: 6 }, (_, i) => pin[i] || '');
-  const keys = ['1','2','3','4','5','6','7','8','9','','0','⌫'];
-  // Edge-to-edge on Android: pad past the system nav bar
-  const insets = useSafeAreaInsets();
-
-  return (
-    <Modal visible={visible} animationType="slide" transparent onRequestClose={handleClose}>
-      <TouchableOpacity style={s.modalOverlay} activeOpacity={1} onPress={handleClose}>
-        <TouchableOpacity
-          activeOpacity={1}
-          style={[s.modalSheet, { paddingBottom: Math.max(insets.bottom, 12) + 24 }]}
-        >
-          <View style={s.modalHandle} />
-          <Text style={s.modalTitle}>Enter Merchant PIN</Text>
-          <Text style={s.modalSub}>Ask {merchantName} for their current PIN code</Text>
-          <View style={s.cellRow}>
-            {cells.map((d, i) => (
-              <View key={i} style={[s.cell, d && s.cellFilled, pin.length === i && s.cellActive, error && s.cellError]}>
-                {loading && i === 5 && pin.length === 6
-                  ? <ActivityIndicator size="small" color={J.teal} />
-                  : <Text style={s.cellText}>{d}</Text>}
-              </View>
-            ))}
-          </View>
-          {error ? <Text style={s.pinError}>{error}</Text> : null}
-          <View style={s.numpad}>
-            {keys.map((k, i) => (
-              k === '' ? <View key={i} style={s.numKeyEmpty} /> :
-              <TouchableOpacity key={i} style={[s.numKey, k === '⌫' && s.numKeyDel]}
-                onPress={() => numPress(k)} disabled={loading} activeOpacity={0.7}>
-                <Text style={[s.numKeyText, k === '⌫' && s.numKeyDelText]}>{k}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-          <TouchableOpacity style={s.cancelBtn} onPress={handleClose}>
-            <Text style={s.cancelText}>Cancel</Text>
-          </TouchableOpacity>
-        </TouchableOpacity>
-      </TouchableOpacity>
-    </Modal>
-  );
-}
-
 // ── Reward Modal ─────────────────────────────────────────────────────────────
 
 function RewardModal({ visible, reward, merchantName, onClose }: {
@@ -186,9 +102,7 @@ export default function CardDetailScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
 
-  const [pinVisible, setPinVisible] = useState(false);
   const [rewardVisible, setRewardVisible] = useState(false);
-  const [stampSuccess, setStampSuccess] = useState(false);
 
   // Cached like the tab screens: last-known card renders instantly (and
   // offline) while a fresh fetch runs. Fetcher returns null on failure so
@@ -246,13 +160,6 @@ export default function CardDetailScreen() {
   const membership = data?.membership ?? null;
   const events = data?.events ?? [];
   const pendingReward = data?.pendingReward ?? null;
-
-  function handleStampSuccess() {
-    setPinVisible(false);
-    setStampSuccess(true);
-    refresh();
-    setTimeout(() => setStampSuccess(false), 3000);
-  }
 
   if (!membership) {
     return (
@@ -355,13 +262,6 @@ export default function CardDetailScreen() {
 
         {/* Action buttons */}
         <View style={s.actions}>
-          <TouchableOpacity style={s.action} onPress={() => setPinVisible(true)} activeOpacity={0.75}>
-            <View style={s.actionCircle}>
-              <Ionicons name="keypad-outline" size={22} color="#fff" />
-            </View>
-            <Text style={s.actionLabel}>Enter PIN</Text>
-          </TouchableOpacity>
-
           <TouchableOpacity
             style={s.action}
             onPress={() => pendingReward && setRewardVisible(true)}
@@ -412,14 +312,6 @@ export default function CardDetailScreen() {
             </View>
           </View>
 
-          {/* Stamp success */}
-          {stampSuccess && (
-            <View style={s.successBanner}>
-              <Ionicons name="checkmark-circle-outline" size={16} color={Colors.success} />
-              <Text style={s.successText}>Stamp added! Card updated.</Text>
-            </View>
-          )}
-
           {/* Stamp history */}
           {events.length === 0 ? (
             <View style={s.emptyWrap}>
@@ -453,8 +345,6 @@ export default function CardDetailScreen() {
         </ScrollView>
       </View>
 
-      <PinModal visible={pinVisible} onClose={() => setPinVisible(false)}
-        onSuccess={handleStampSuccess} merchantName={merchants.business_name} />
       <RewardModal visible={rewardVisible} reward={pendingReward}
         merchantName={merchants.business_name} onClose={() => setRewardVisible(false)} />
     </View>
