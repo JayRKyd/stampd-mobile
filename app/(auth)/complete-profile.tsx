@@ -7,6 +7,7 @@ import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '@/lib/supabase';
+import { nameProfanityError } from '@/lib/profanity';
 import { Colors, FontFamily, Palette as J } from '@/constants/theme';
 
 export default function CompleteProfileScreen() {
@@ -20,6 +21,12 @@ export default function CompleteProfileScreen() {
   async function handleSave() {
     if (!firstName.trim() || !lastName.trim()) {
       setError('Please enter your first and last name');
+      return;
+    }
+
+    const profanityError = nameProfanityError(firstName, lastName);
+    if (profanityError) {
+      setError(profanityError);
       return;
     }
 

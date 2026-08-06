@@ -64,6 +64,7 @@ New merchants are `is_active = false` and cannot stamp until approved.
 
 - [ ] Open the TestFlight build → welcome screen (image, "Grand Bahama" chip) looks right
 - [ ] Sign up as Ana (`+ana`) — first/last name, email, password
+- [ ] **Name profanity filter**: try a vulgar first name (e.g. `Sh1t`) at sign-up → inline error "That name can't be used…" and nothing saves; a real name that merely contains a rude substring (e.g. `Cassandra`, `Dickson`) is accepted. Same check on Profile → edit name.
 - [ ] **iOS should NOT hijack the password field with the yellow "strong password" overlay** — you type your own password
 - [ ] Terms checkbox is required before the button works
 - [ ] "Check your email" state appears → open the email on ANY device (try the laptop deliberately) → link lands on `stampdbahamas.com/confirmed` → "open the Stampd app and sign in"

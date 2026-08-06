@@ -8,6 +8,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import * as Notifications from 'expo-notifications';
 import { supabase } from '@/lib/supabase';
+import { nameProfanityError } from '@/lib/profanity';
 import { registerPushToken } from '@/lib/pushNotifications';
 import { useCachedData } from '@/lib/dataCache';
 import { Colors, FontFamily, Palette as J, Shadow } from '@/constants/theme';
@@ -68,6 +69,12 @@ export default function ProfileScreen() {
   async function saveNameEdit() {
     if (!editFirst.trim() || !editLast.trim()) {
       setEditError('Both first and last name are required');
+      return;
+    }
+
+    const profanityError = nameProfanityError(editFirst, editLast);
+    if (profanityError) {
+      setEditError(profanityError);
       return;
     }
 
