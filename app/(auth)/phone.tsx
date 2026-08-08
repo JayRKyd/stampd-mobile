@@ -60,7 +60,7 @@ export default function PhoneScreen() {
             value={phone}
             onChangeText={(t) => { setPhone(formatPhone(t)); setError(''); }}
             placeholder="(242) 000-0000"
-            placeholderTextColor={Colors.textMuted}
+            placeholderTextColor={J.inkMuted}
             keyboardType="phone-pad"
             maxLength={14}
             autoFocus
@@ -75,7 +75,7 @@ export default function PhoneScreen() {
         ) : null}
 
         <Text style={s.hint}>
-          Your number is your Stampd identity — merchants can also stamp you by number if you prefer not to share your PIN.
+          Your number is your Stampd identity. Merchants can also stamp you by number if you prefer not to share your PIN.
         </Text>
 
         <TouchableOpacity

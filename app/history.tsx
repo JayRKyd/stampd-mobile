@@ -133,7 +133,7 @@ export default function HistoryScreen() {
             </View>
             <Text style={s.emptyTitle}>No activity yet</Text>
             <Text style={s.emptyText}>
-              Show your PIN when you pay at a local spot — every stamp lands here.
+              Show your PIN when you pay at a local spot. Every stamp lands here.
             </Text>
           </View>
         ) : (
@@ -227,7 +227,7 @@ const s = StyleSheet.create({
     letterSpacing: 0.4,
     textAlign: 'center',
   },
-  summarySep: { width: 1, backgroundColor: Colors.borderLight, alignSelf: 'stretch', marginVertical: 4 },
+  summarySep: { width: 1, backgroundColor: J.lineSoft, alignSelf: 'stretch', marginVertical: 4 },
 
   sectionLabel: {
     fontSize: 11,

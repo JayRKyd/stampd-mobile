@@ -211,7 +211,7 @@ const s = StyleSheet.create({
     padding: 14,
     alignItems: 'flex-start',
   },
-  rowBorder: { borderBottomWidth: 1, borderBottomColor: Colors.borderLight },
+  rowBorder: { borderBottomWidth: 1, borderBottomColor: J.lineSoft },
 
   avatarWrap: { position: 'relative', flexShrink: 0 },
   avatar: {

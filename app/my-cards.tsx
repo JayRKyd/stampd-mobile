@@ -101,7 +101,7 @@ export default function MyCardsScreen() {
             </View>
             <Text style={s.emptyTitle}>No cards yet</Text>
             <Text style={s.emptyBody}>
-              Show your PIN to the cashier when you pay — your first stamp adds their card here automatically.
+              Show your PIN to the cashier when you pay. Your first stamp adds their card here automatically.
             </Text>
             <TouchableOpacity
               style={s.emptyButton}

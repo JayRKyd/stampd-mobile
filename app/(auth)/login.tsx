@@ -52,8 +52,8 @@ export default function LoginScreen() {
     if (manual) {
       setConfirmHint(
         signInErr.message.toLowerCase().includes('confirm')
-          ? "Your email isn't confirmed yet — tap the link in your inbox first."
-          : 'Could not sign in — try again in a moment.'
+          ? "Your email isn't confirmed yet. Tap the link in your inbox first."
+          : 'Could not sign in. Try again in a moment.'
       );
     }
   }
@@ -163,7 +163,7 @@ export default function LoginScreen() {
             <Text style={s.confirmedEmail}>{email}</Text>
           </Text>
           <Text style={s.confirmedHint}>
-            Open the link, then come back — we'll sign you in automatically.
+            Open the link, then come back and we'll sign you in automatically.
           </Text>
           {confirmHint ? <Text style={s.confirmedWarn}>{confirmHint}</Text> : null}
           <TouchableOpacity
@@ -172,7 +172,7 @@ export default function LoginScreen() {
             disabled={loading}
             activeOpacity={0.85}
           >
-            <Text style={s.primaryBtnText}>{loading ? 'Signing in…' : "I've confirmed — sign me in"}</Text>
+            <Text style={s.primaryBtnText}>{loading ? 'Signing in…' : "I've confirmed, sign me in"}</Text>
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => { setPassword(''); setConfirmHint(''); setConfirmed(false); setMode('signin'); }}
@@ -210,7 +210,7 @@ export default function LoginScreen() {
               value={firstName}
               onChangeText={(t) => { setFirstName(t); setError(''); }}
               placeholder="First name"
-              placeholderTextColor={Colors.textMuted}
+              placeholderTextColor={J.inkMuted}
               autoComplete="given-name"
               autoCapitalize="words"
             />
@@ -220,7 +220,7 @@ export default function LoginScreen() {
               value={lastName}
               onChangeText={(t) => { setLastName(t); setError(''); }}
               placeholder="Last name"
-              placeholderTextColor={Colors.textMuted}
+              placeholderTextColor={J.inkMuted}
               autoComplete="family-name"
               autoCapitalize="words"
             />
@@ -234,7 +234,7 @@ export default function LoginScreen() {
             value={email}
             onChangeText={(t) => { setEmail(t); setError(''); }}
             placeholder="Email"
-            placeholderTextColor={Colors.textMuted}
+            placeholderTextColor={J.inkMuted}
             keyboardType="email-address"
             autoCapitalize="none"
             autoComplete="email"
@@ -246,7 +246,7 @@ export default function LoginScreen() {
               value={password}
               onChangeText={(t) => { setPassword(t); setError(''); }}
               placeholder="Password"
-              placeholderTextColor={Colors.textMuted}
+              placeholderTextColor={J.inkMuted}
               secureTextEntry={!showPassword}
               // Signup: suppress iOS's automatic strong-password overlay so
               // people type their own password ('oneTimeCode' is the standard
@@ -263,7 +263,7 @@ export default function LoginScreen() {
               <Ionicons
                 name={showPassword ? 'eye-off-outline' : 'eye-outline'}
                 size={18}
-                color={Colors.textMuted}
+                color={J.inkMuted}
               />
             </TouchableOpacity>
           </View>

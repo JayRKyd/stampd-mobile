@@ -60,7 +60,7 @@ export function isProfaneName(raw: string): boolean {
 // Shared validation for the name forms. Returns an error message or null.
 export function nameProfanityError(first: string, last: string): string | null {
   if (isProfaneName(first) || isProfaneName(last)) {
-    return "That name can't be used — merchants and their staff will see it. Please use your real name.";
+    return "That name can't be used. Merchants and their staff will see it, so please use your real name.";
   }
   return null;
 }

@@ -139,7 +139,7 @@ function RootLayout() {
   }, [ready, booted]);
 
   if (!booted)
-    return <View style={{ flex: 1, backgroundColor: Colors.background }} />;
+    return <View style={{ flex: 1, backgroundColor: Palette.cream }} />;
 
   // The navigator mounts on its initial route and the guard effect redirects a
   // beat later — on Android that beat is visible (welcome page blinks past on

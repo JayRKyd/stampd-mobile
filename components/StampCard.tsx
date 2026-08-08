@@ -50,7 +50,7 @@ export function StampCard({
   const complete = currentStamps >= totalRequired;
   const stampsLeft = Math.max(0, totalRequired - currentStamps);
   const caption = complete
-    ? `Reward ready — ${rewardTitle}!`
+    ? `Reward ready: ${rewardTitle}!`
     : `${stampsLeft} more ${visitLabelWord(visitLabel, stampsLeft)} to get ${rewardTitle}`;
 
   return (

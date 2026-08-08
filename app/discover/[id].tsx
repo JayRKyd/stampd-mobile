@@ -531,7 +531,7 @@ const s = StyleSheet.create({
   stat: { flex: 1, alignItems: 'center', gap: 4 },
   statValue: { fontSize: 26, fontFamily: FontFamily.extrabold, color: J.ink },
   statLabel: { fontSize: 10, fontFamily: FontFamily.medium, color: J.inkSoft, letterSpacing: 0.5 },
-  statSep: { width: 1, backgroundColor: Colors.borderLight },
+  statSep: { width: 1, backgroundColor: J.lineSoft },
 
   // Join section
   joinTitle: {

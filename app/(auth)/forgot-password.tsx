@@ -77,7 +77,7 @@ export default function ForgotPasswordScreen() {
         <View style={s.content}>
           <Text style={s.title}>Forgot your password?</Text>
           <Text style={s.sub}>
-            No stress — enter your email and we'll send you a link to set a new one.
+            No stress. Enter your email and we'll send you a link to set a new one.
           </Text>
 
           <View style={[s.inputGroup, error ? s.inputGroupError : null]}>
@@ -86,7 +86,7 @@ export default function ForgotPasswordScreen() {
               value={email}
               onChangeText={(t) => { setEmail(t); setError(''); }}
               placeholder="Email"
-              placeholderTextColor={Colors.textMuted}
+              placeholderTextColor={J.inkMuted}
               keyboardType="email-address"
               autoCapitalize="none"
               autoComplete="email"

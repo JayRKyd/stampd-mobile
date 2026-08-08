@@ -180,7 +180,7 @@ export default function DiscoverScreen() {
               <Text style={s.emptyTitle}>No businesses found</Text>
               <Text style={s.emptyBody}>
                 {search.trim()
-                  ? `No results for "${search}" — try a different name`
+                  ? `No results for "${search}". Try a different name`
                   : 'No businesses in this category yet'}
               </Text>
               {(search.trim() || activeCategory !== 'All') && (
@@ -242,13 +242,13 @@ export default function DiscoverScreen() {
                     <Text style={s.cardCategory} numberOfLines={1}>{subLine}</Text>
                     {m.address ? (
                       <View style={s.cardAddress}>
-                        <Ionicons name="location-outline" size={11} color={Colors.textMuted} />
+                        <Ionicons name="location-outline" size={11} color={J.inkMuted} />
                         <Text style={s.cardAddressText} numberOfLines={1}>{m.address}</Text>
                       </View>
                     ) : null}
                   </View>
 
-                  <Ionicons name="chevron-forward" size={16} color={Colors.textMuted} />
+                  <Ionicons name="chevron-forward" size={16} color={J.inkMuted} />
                 </View>
 
                 {/* Deal-math pills (Joyn style): earn rule + payoff */}
@@ -363,7 +363,7 @@ const s = StyleSheet.create({
   logoWrap: { position: 'relative' },
   logoBox: {
     width: 56, height: 56, borderRadius: 14, overflow: 'hidden',
-    backgroundColor: '#fff', borderWidth: 1, borderColor: Colors.border,
+    backgroundColor: '#fff', borderWidth: 1, borderColor: J.line,
     alignItems: 'center', justifyContent: 'center',
   },
   logoBoxRound: { borderRadius: 28 },
@@ -390,14 +390,14 @@ const s = StyleSheet.create({
   cardAddress: { flexDirection: 'row', alignItems: 'center', gap: 3, marginTop: 4 },
   cardAddressText: {
     fontSize: 12, fontFamily: FontFamily.regular,
-    color: Colors.textMuted, flex: 1,
+    color: J.inkMuted, flex: 1,
   },
 
   // Card footer (deal-math pills)
   cardFooter: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
     paddingHorizontal: 14, paddingBottom: 12, paddingTop: 10,
-    borderTopWidth: 1, borderTopColor: Colors.borderLight,
+    borderTopWidth: 1, borderTopColor: J.lineSoft,
   },
   earnPill: {
     height: 26, borderRadius: 13, paddingHorizontal: 10,

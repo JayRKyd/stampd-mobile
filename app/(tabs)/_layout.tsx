@@ -41,7 +41,7 @@ export default function TabsLayout() {
       ],
       tabBarLabelStyle: s.label,
       tabBarActiveTintColor: Palette.teal,
-      tabBarInactiveTintColor: Colors.textMuted,
+      tabBarInactiveTintColor: Palette.inkMuted,
       tabBarIcon: ({ focused, color, size }) => {
         const icons = ICONS[route.name];
         return (
@@ -63,9 +63,9 @@ export default function TabsLayout() {
 
 const s = StyleSheet.create({
   tabBar: {
-    backgroundColor: Colors.surface,
+    backgroundColor: '#FFFFFF',
     borderTopWidth: 1,
-    borderTopColor: Colors.border,
+    borderTopColor: Palette.line,
     paddingTop: 8,
   },
   label: {

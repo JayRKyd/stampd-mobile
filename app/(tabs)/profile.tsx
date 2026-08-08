@@ -99,7 +99,7 @@ export default function ProfileScreen() {
     setEditLoading(false);
 
     if (updateError || authError) {
-      setEditError('Could not save — try again');
+      setEditError('Could not save. Try again');
       return;
     }
 
@@ -114,12 +114,25 @@ export default function ProfileScreen() {
     await supabase.auth.signOut();
   }
 
+  // market:// opens the Play Store app directly; the web URL is the fallback
+  // for devices without it (emulators, some tablets).
+  async function rateApp() {
+    const market = 'market://details?id=com.stampdbahamas.app';
+    const web = 'https://play.google.com/store/apps/details?id=com.stampdbahamas.app';
+    try {
+      if (await Linking.canOpenURL(market)) await Linking.openURL(market);
+      else await Linking.openURL(web);
+    } catch {
+      Linking.openURL(web).catch(() => {});
+    }
+  }
+
   async function handleDeleteAccount() {
     setDeleteLoading(true);
     setDeleteError('');
     const { error } = await supabase.rpc('delete_own_account');
     if (error) {
-      setDeleteError('Could not delete your account — try again or contact support.');
+      setDeleteError('Could not delete your account. Try again or contact support.');
       setDeleteLoading(false);
       return;
     }
@@ -168,7 +181,7 @@ export default function ProfileScreen() {
               : '—'}
           />
           <Text style={s.pinCaption}>
-            Show this when you pay — your first stamp joins you to a merchant's program.
+            Show this when you pay. Your first stamp joins you to a merchant's program.
           </Text>
 
           {/* Notifications */}
@@ -196,7 +209,7 @@ export default function ProfileScreen() {
             >
               <Ionicons name="notifications-off-outline" size={17} color={J.amber} />
               <Text style={s.pushOffText}>
-                Push notifications are off — you'll miss reward alerts.
+                Push notifications are off. You'll miss reward alerts.
               </Text>
               <View style={s.pushOffBtn}>
                 <Text style={s.pushOffBtnText}>Turn on</Text>
@@ -234,6 +247,37 @@ export default function ProfileScreen() {
             </View>
           </View>
 
+          {/* About */}
+          <Text style={s.sectionLabel}>ABOUT</Text>
+          <View style={s.accountCard}>
+            {Platform.OS === 'android' && (
+              <>
+                <TouchableOpacity style={s.row} onPress={rateApp} activeOpacity={0.7}>
+                  <Text style={s.rowLabel}>Rate Stampd</Text>
+                  <Ionicons name="chevron-forward" size={14} color={J.inkSoft} />
+                </TouchableOpacity>
+                <View style={s.divider} />
+              </>
+            )}
+            <TouchableOpacity
+              style={s.row}
+              onPress={() => Linking.openURL('https://www.stampdbahamas.com/privacy')}
+              activeOpacity={0.7}
+            >
+              <Text style={s.rowLabel}>Privacy Policy</Text>
+              <Ionicons name="chevron-forward" size={14} color={J.inkSoft} />
+            </TouchableOpacity>
+            <View style={s.divider} />
+            <TouchableOpacity
+              style={s.row}
+              onPress={() => Linking.openURL('https://www.stampdbahamas.com/terms')}
+              activeOpacity={0.7}
+            >
+              <Text style={s.rowLabel}>Terms of Service</Text>
+              <Ionicons name="chevron-forward" size={14} color={J.inkSoft} />
+            </TouchableOpacity>
+          </View>
+
           {/* Sign Out — no confirmation, by design */}
           <TouchableOpacity style={s.signOut} onPress={handleSignOut} activeOpacity={0.85}>
             <Ionicons name="log-out-outline" size={17} color={Colors.danger} />
@@ -266,7 +310,7 @@ export default function ProfileScreen() {
                 value={editFirst}
                 onChangeText={(t) => { setEditFirst(t); setEditError(''); }}
                 placeholder="First name"
-                placeholderTextColor={Colors.textMuted}
+                placeholderTextColor={J.inkMuted}
                 autoComplete="given-name"
                 autoCapitalize="words"
               />
@@ -276,7 +320,7 @@ export default function ProfileScreen() {
                 value={editLast}
                 onChangeText={(t) => { setEditLast(t); setEditError(''); }}
                 placeholder="Last name"
-                placeholderTextColor={Colors.textMuted}
+                placeholderTextColor={J.inkMuted}
                 autoComplete="family-name"
                 autoCapitalize="words"
               />
@@ -443,8 +487,8 @@ const s = StyleSheet.create({
   rowRight: { flexDirection: 'row', alignItems: 'center', gap: 4, flexShrink: 1, maxWidth: '55%' },
   rowLabel: { fontSize: 15, fontFamily: FontFamily.medium, color: J.ink },
   rowValue: { fontSize: 14, fontFamily: FontFamily.medium, color: J.inkSoft },
-  rowValueMuted: { color: Colors.textMuted },
-  divider: { height: 1, backgroundColor: Colors.borderLight },
+  rowValueMuted: { color: J.inkMuted },
+  divider: { height: 1, backgroundColor: J.lineSoft },
 
   // Sign out
   signOut: {
@@ -490,7 +534,7 @@ const s = StyleSheet.create({
     backgroundColor: '#fff', borderTopLeftRadius: 24, borderTopRightRadius: 24,
     paddingHorizontal: 24, paddingTop: 12, paddingBottom: 40,
   },
-  sheetHandle: { width: 40, height: 4, borderRadius: 2, backgroundColor: Colors.border, alignSelf: 'center', marginBottom: 18 },
+  sheetHandle: { width: 40, height: 4, borderRadius: 2, backgroundColor: J.line, alignSelf: 'center', marginBottom: 18 },
   sheetTitle: { fontSize: 20, fontFamily: FontFamily.extrabold, color: J.ink, letterSpacing: -0.3, marginBottom: 4 },
   sheetSub: { fontSize: 13, fontFamily: FontFamily.regular, color: J.inkSoft, marginBottom: 18 },
 

@@ -158,6 +158,8 @@ Merchant side: laptop on `/stamp`. Customer side: phone on Home (PIN visible).
 ### 6.6 Account deletion
 
 - [ ] Ben: Profile → delete account → confirm → signed out to welcome
+- [ ] **About section (v1.0.1)**: Profile shows ABOUT card — "Rate Stampd" (Android only) opens the Play Store listing; Privacy Policy and Terms of Service open stampdbahamas.com/privacy and /terms in the browser
+- [ ] **Warm palette check (v1.0.1)**: placeholders, dividers, and muted icons across auth screens, Discover, Home, Rewards, History and Notifications no longer show the old blue-gray tint (all warm ink tones on cream)
 - [ ] Try signing in as Ben → rejected (account gone)
 - [ ] Supabase: Ben's rows are gone from `users`/`memberships`
 

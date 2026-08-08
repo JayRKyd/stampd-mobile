@@ -35,7 +35,7 @@ export default function CompleteProfileScreen() {
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-      setError('Session expired — please sign in again');
+      setError('Session expired. Please sign in again');
       setLoading(false);
       return;
     }
@@ -51,7 +51,7 @@ export default function CompleteProfileScreen() {
     setLoading(false);
 
     if (updateError || authError) {
-      setError('Could not save your name — try again');
+      setError('Could not save your name. Try again');
       return;
     }
 
@@ -67,7 +67,7 @@ export default function CompleteProfileScreen() {
       >
         <Text style={s.title}>What's your name?</Text>
         <Text style={s.sub}>
-          Merchants see this when you show your PIN at the counter — first and last name required.
+          Merchants see this when you show your PIN at the counter. First and last name required.
         </Text>
 
         <View style={s.inputGroup}>
@@ -76,7 +76,7 @@ export default function CompleteProfileScreen() {
             value={firstName}
             onChangeText={(t) => { setFirstName(t); setError(''); }}
             placeholder="First name"
-            placeholderTextColor={Colors.textMuted}
+            placeholderTextColor={J.inkMuted}
             autoComplete="given-name"
             autoCapitalize="words"
             autoFocus
@@ -87,7 +87,7 @@ export default function CompleteProfileScreen() {
             value={lastName}
             onChangeText={(t) => { setLastName(t); setError(''); }}
             placeholder="Last name"
-            placeholderTextColor={Colors.textMuted}
+            placeholderTextColor={J.inkMuted}
             autoComplete="family-name"
             autoCapitalize="words"
           />

@@ -54,6 +54,9 @@ export const Palette = {
   amber: '#F5A623',       // stamps stat dot
   ink: '#1A2B2A',         // dark text on cream
   inkSoft: '#74807E',     // secondary text on cream
+  inkMuted: '#9AA5A2',    // placeholders / disabled text on cream
+  line: 'rgba(26,43,42,0.12)',     // hairline borders on cream/white
+  lineSoft: 'rgba(26,43,42,0.07)', // subtle row dividers
 };
 
 export const FontFamily = {

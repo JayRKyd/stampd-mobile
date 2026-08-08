@@ -340,7 +340,7 @@ export default function RewardsScreen() {
                           <Ionicons
                             name={r.status === 'redeemed' ? 'checkmark-circle-outline' : 'time-outline'}
                             size={20}
-                            color={r.status === 'redeemed' ? Colors.success : Colors.textMuted}
+                            color={r.status === 'redeemed' ? Colors.success : J.inkMuted}
                           />
                         </View>
                         <View style={{ flex: 1 }}>
@@ -500,12 +500,12 @@ const s = StyleSheet.create({
   stepBody: { flex: 1 },
   stepLabel: { fontSize: 15, fontFamily: FontFamily.semibold, color: J.ink, marginBottom: 3, letterSpacing: -0.2 },
   stepDesc: { fontSize: 13, fontFamily: FontFamily.regular, color: J.inkSoft, lineHeight: 19 },
-  stepDivider: { height: 1, backgroundColor: Colors.borderLight, marginLeft: 42 },
+  stepDivider: { height: 1, backgroundColor: J.lineSoft, marginLeft: 42 },
 
   // History
   historyCard: { backgroundColor: '#fff', borderRadius: 20, overflow: 'hidden', ...Shadow.sm },
   historyRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.md, padding: Spacing.lg },
-  historyDivider: { height: 1, backgroundColor: Colors.borderLight, marginHorizontal: Spacing.lg },
+  historyDivider: { height: 1, backgroundColor: J.lineSoft, marginHorizontal: Spacing.lg },
   historyIcon: {
     width: 40, height: 40, borderRadius: Radius.md,
     backgroundColor: J.cream,
@@ -515,7 +515,7 @@ const s = StyleSheet.create({
   historyBiz: { fontSize: 11, fontFamily: FontFamily.regular, color: J.inkSoft },
   historyStatus: { fontSize: 11, fontFamily: FontFamily.bold, marginBottom: 2 },
   statusRedeemed: { color: Colors.success },
-  statusExpired: { color: Colors.textMuted },
+  statusExpired: { color: J.inkMuted },
   historyDate: { fontSize: 11, fontFamily: FontFamily.regular, color: J.inkSoft },
 
   // Redeem modal
@@ -525,7 +525,7 @@ const s = StyleSheet.create({
     paddingHorizontal: Spacing.xxl, paddingBottom: 40, paddingTop: Spacing.lg,
     alignItems: 'center', gap: Spacing.lg,
   },
-  handle: { width: 40, height: 4, borderRadius: 2, backgroundColor: Colors.border },
+  handle: { width: 40, height: 4, borderRadius: 2, backgroundColor: J.line },
   sheetIconBox: {
     width: 60, height: 60, borderRadius: Radius.xl,
     backgroundColor: 'rgba(212,168,67,0.12)',
