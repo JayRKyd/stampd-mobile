@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   Clipboard,
   Dimensions,
+  Platform,
   NativeSyntheticEvent,
   NativeScrollEvent,
 } from 'react-native';
@@ -23,8 +24,11 @@ import { firstName as displayFirstName } from '@/lib/displayName';
 import { Colors, FontFamily, Palette, Radius, Shadow } from '@/constants/theme';
 import { StampCard } from '@/components/StampCard';
 import { PinCard } from '@/components/PinCard';
+import { CoachMarks, CoachStep } from '@/components/CoachMarks';
+import { consumeTourRequest, markTourDone } from '@/lib/tour';
 
 const SCREEN_W = Dimensions.get('window').width;
+const SCREEN_H = Dimensions.get('window').height;
 const HERO_W = SCREEN_W - 40;
 const HERO_GAP = 12;
 
@@ -61,6 +65,9 @@ export default function HomeScreen() {
   // pushes it out so people can stop and read a slide.
   const heroPausedUntilRef = useRef(0);
   const isFocused = useIsFocused();
+  const [tour, setTour] = useState<CoachStep[] | null>(null);
+  const pinWrapRef = useRef<View>(null);
+  const toggleRef = useRef<View>(null);
 
   const copyPinToClipboard = (pin: string) => {
     if (!pin) return;
@@ -93,6 +100,57 @@ export default function HomeScreen() {
 
   const profile = homeData?.profile ?? null;
   const memberships = homeData?.memberships ?? [];
+
+  // First-run walkthrough: once the profile has rendered, measure the real
+  // on-screen targets and spotlight them. Runs once ever (or on Profile's
+  // "App tour" replay). The 550ms delay lets the layout settle first.
+  useEffect(() => {
+    if (!isFocused || !profile || tour) return;
+    let cancelled = false;
+    (async () => {
+      if (!(await consumeTourRequest())) return;
+      setTimeout(() => {
+        if (cancelled) return;
+        const measure = (ref: React.RefObject<View | null>) =>
+          new Promise<CoachStep['rect'] | null>((resolve) => {
+            if (!ref.current) return resolve(null);
+            ref.current.measureInWindow((x, y, width, height) =>
+              resolve(width > 0 && height > 0 ? { x, y, width, height } : null),
+            );
+          });
+        Promise.all([measure(pinWrapRef), measure(toggleRef)]).then(([pinRect, toggleRect]) => {
+          if (cancelled) return;
+          const isIOS = Platform.OS === 'ios';
+          const tabBarHeight = isIOS
+            ? (insets.bottom > 0 ? 66 + insets.bottom : 88)
+            : (insets.bottom > 0 ? 70 + insets.bottom : 86);
+          const steps: CoachStep[] = [];
+          if (pinRect) {
+            steps.push({
+              title: 'Your PIN is your loyalty card',
+              body: 'Show this six-digit number when you pay. The merchant types it in and your stamp lands right away.',
+              rect: pinRect,
+            });
+          }
+          if (toggleRect) {
+            steps.push({
+              title: 'Flip between PIN and Cards',
+              body: 'Cards shows every shop you have visited and how close each reward is. Your first stamp adds a card automatically.',
+              rect: toggleRect,
+            });
+          }
+          steps.push({
+            title: 'Discover shops, claim rewards',
+            body: 'Discover lists every place on Stampd, with directions to their door. Rewards is where your free stuff appears.',
+            rect: { x: 6, y: SCREEN_H - tabBarHeight, width: SCREEN_W - 12, height: tabBarHeight - 4 },
+          });
+          if (steps.length > 0) setTour(steps);
+        });
+      }, 550);
+    })();
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isFocused, profile, tour]);
 
   const greeting = displayFirstName(profile);
   const rawPin = profile?.personal_pin ?? '';
@@ -364,7 +422,7 @@ export default function HomeScreen() {
         {/* ===== Cream sheet ===== */}
         <View style={s.sheet}>
           {/* PIN / Cards toggle */}
-          <View style={s.toggleRow}>
+          <View style={s.toggleRow} ref={toggleRef} collapsable={false}>
             <TouchableOpacity
               style={[s.togglePill, view === 'shops' && s.togglePillActive]}
               onPress={() => setView('shops')}
@@ -425,14 +483,16 @@ export default function HomeScreen() {
               </View>
 
               {/* Member PIN — the card */}
-              <PinCard
-                pinDisplay={pinDisplay}
-                holderName={holderName}
-                memberSince={memberSinceShort}
-                masked={isPinMasked}
-                onToggleMask={() => setIsPinMasked(!isPinMasked)}
-                onPress={() => copyPinToClipboard(rawPin)}
-              />
+              <View ref={pinWrapRef} collapsable={false}>
+                <PinCard
+                  pinDisplay={pinDisplay}
+                  holderName={holderName}
+                  memberSince={memberSinceShort}
+                  masked={isPinMasked}
+                  onToggleMask={() => setIsPinMasked(!isPinMasked)}
+                  onPress={() => copyPinToClipboard(rawPin)}
+                />
+              </View>
               <View style={s.pinFooterRow}>
                 <Text style={s.pinFooterHint}>Tap card to copy · Show when you pay</Text>
                 <TouchableOpacity
@@ -508,6 +568,16 @@ export default function HomeScreen() {
           <Ionicons name="checkmark-circle" size={15} color="#fff" />
           <Text style={s.toastText}>{toastMsg}</Text>
         </View>
+      )}
+
+      {tour && (
+        <CoachMarks
+          steps={tour}
+          onDone={() => {
+            setTour(null);
+            markTourDone().catch(() => {});
+          }}
+        />
       )}
     </View>
   );

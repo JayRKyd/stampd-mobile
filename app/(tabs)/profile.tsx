@@ -9,6 +9,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Notifications from 'expo-notifications';
 import { supabase } from '@/lib/supabase';
 import { nameProfanityError } from '@/lib/profanity';
+import { requestTourReplay } from '@/lib/tour';
 import { registerPushToken } from '@/lib/pushNotifications';
 import { useCachedData } from '@/lib/dataCache';
 import { Colors, FontFamily, Palette as J, Shadow } from '@/constants/theme';
@@ -259,6 +260,18 @@ export default function ProfileScreen() {
                 <View style={s.divider} />
               </>
             )}
+            <TouchableOpacity
+              style={s.row}
+              onPress={async () => {
+                await requestTourReplay().catch(() => {});
+                router.navigate('/(tabs)');
+              }}
+              activeOpacity={0.7}
+            >
+              <Text style={s.rowLabel}>App tour</Text>
+              <Ionicons name="chevron-forward" size={14} color={J.inkSoft} />
+            </TouchableOpacity>
+            <View style={s.divider} />
             <TouchableOpacity
               style={s.row}
               onPress={() => Linking.openURL('https://www.stampdbahamas.com/privacy')}

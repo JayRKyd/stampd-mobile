@@ -159,6 +159,7 @@ Merchant side: laptop on `/stamp`. Customer side: phone on Home (PIN visible).
 
 - [ ] Ben: Profile → delete account → confirm → signed out to welcome
 - [ ] **About section (v1.0.1)**: Profile shows ABOUT card — "Rate Stampd" (Android only) opens the Play Store listing; Privacy Policy and Terms of Service open stampdbahamas.com/privacy and /terms in the browser
+- [ ] **First-run walkthrough (v1.0.2)**: on a fresh install (or Profile → App tour), Home shows a 3-step spotlight tour — PIN card, PIN/Cards toggle, then the tab bar. Spotlight hole lines up with each element (check a small phone AND a tall phone), Skip dismisses instantly, finishing (or skipping) means it never auto-shows again. Sign out/in does NOT replay it.
 - [ ] **Warm palette check (v1.0.1)**: placeholders, dividers, and muted icons across auth screens, Discover, Home, Rewards, History and Notifications no longer show the old blue-gray tint (all warm ink tones on cream)
 - [ ] Try signing in as Ben → rejected (account gone)
 - [ ] Supabase: Ben's rows are gone from `users`/`memberships`
