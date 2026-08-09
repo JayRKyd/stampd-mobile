@@ -115,6 +115,20 @@ export default function ProfileScreen() {
     await supabase.auth.signOut();
   }
 
+  // Opens the user's email app with a prefilled report. The device/version
+  // footer helps triage; keep it in sync with app.json's version.
+  function reportProblem() {
+    const subject = 'Stampd — Report a problem';
+    const body =
+      `Describe what happened:\n\n\n` +
+      `------------------------------\n` +
+      `Please leave the details below to help us fix it:\n` +
+      `App: Stampd v1.0.2 (${Platform.OS} ${Platform.Version})\n` +
+      (email ? `Account: ${email}\n` : '');
+    const url = `mailto:infoteam@ryknotechsolutions.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    Linking.openURL(url).catch(() => {});
+  }
+
   // market:// opens the Play Store app directly; the web URL is the fallback
   // for devices without it (emulators, some tablets).
   async function rateApp() {
@@ -271,6 +285,11 @@ export default function ProfileScreen() {
               activeOpacity={0.7}
             >
               <Text style={s.rowLabel}>App tour</Text>
+              <Ionicons name="chevron-forward" size={14} color={J.inkSoft} />
+            </TouchableOpacity>
+            <View style={s.divider} />
+            <TouchableOpacity style={s.row} onPress={reportProblem} activeOpacity={0.7}>
+              <Text style={s.rowLabel}>Report a problem</Text>
               <Ionicons name="chevron-forward" size={14} color={J.inkSoft} />
             </TouchableOpacity>
             <View style={s.divider} />

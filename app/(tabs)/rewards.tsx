@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal,
   ActivityIndicator, Dimensions, NativeSyntheticEvent, NativeScrollEvent,
@@ -8,6 +8,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '@/lib/supabase';
 import { useCachedData } from '@/lib/dataCache';
+import { maybeAskForReview } from '@/lib/review';
 import { cardGradient, shadeColor } from '@/lib/cardColor';
 import { visitLabelWord } from '@/lib/visitLabel';
 import { Colors, FontFamily, Palette as J, Radius, Spacing, Shadow } from '@/constants/theme';
@@ -160,6 +161,13 @@ export default function RewardsScreen() {
   const nextUp = rwData?.nextUp ?? null;
 
   const pendingCount = rewards.length;
+
+  // Ask for a rating after the full loop pays off: the user has actually
+  // redeemed a reward. Fires at most once ever (Google throttles further).
+  const hasRedeemed = history.some(r => r.status === 'redeemed');
+  useEffect(() => {
+    if (hasRedeemed) maybeAskForReview();
+  }, [hasRedeemed]);
 
   return (
     <View style={s.root}>
