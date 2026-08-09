@@ -118,12 +118,22 @@ export default function HomeScreen() {
               resolve(width > 0 && height > 0 ? { x, y, width, height } : null),
             );
           });
-        Promise.all([measure(pinWrapRef), measure(toggleRef)]).then(([pinRect, toggleRect]) => {
+        Promise.all([measure(pinWrapRef), measure(toggleRef)]).then(([pinRectRaw, toggleRectRaw]) => {
           if (cancelled) return;
           const isIOS = Platform.OS === 'ios';
           const tabBarHeight = isIOS
             ? (insets.bottom > 0 ? 66 + insets.bottom : 88)
             : (insets.bottom > 0 ? 70 + insets.bottom : 86);
+          // Elements can extend behind the tab bar (e.g. the PIN card on
+          // short screens); clip their spotlight so it stops above the bar.
+          const maxY = SCREEN_H - tabBarHeight - 14;
+          const clamp = (r: CoachStep['rect'] | null) => {
+            if (!r) return null;
+            if (r.y >= maxY) return null;
+            return r.y + r.height > maxY ? { ...r, height: maxY - r.y } : r;
+          };
+          const pinRect = clamp(pinRectRaw);
+          const toggleRect = clamp(toggleRectRaw);
           const steps: CoachStep[] = [];
           if (pinRect) {
             steps.push({

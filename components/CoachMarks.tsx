@@ -18,12 +18,12 @@ const HOLE_RADIUS = 18; // matches the app's card radii closely enough
 const { width: W, height: H } = Dimensions.get('window');
 
 // Full-screen rect with a rounded-rect hole, via even-odd fill.
-function maskPath(r: CoachStep['rect']): string {
-  const x = r.x - PAD;
-  const y = r.y - PAD;
-  const w = r.width + PAD * 2;
-  const h = r.height + PAD * 2;
-  const rad = Math.min(HOLE_RADIUS, w / 2, h / 2);
+function maskPath(r: CoachStep['rect'], pad: number): string {
+  const x = r.x - pad;
+  const y = r.y - pad;
+  const w = r.width + pad * 2;
+  const h = r.height + pad * 2;
+  const rad = Math.min(HOLE_RADIUS + Math.max(pad - PAD, 0), w / 2, h / 2);
   return (
     `M0 0H${W}V${H}H0Z ` +
     `M${x + rad} ${y}` +
@@ -56,8 +56,11 @@ export function CoachMarks({
   return (
     <Modal transparent statusBarTranslucent animationType="fade" onRequestClose={() => onDone(false)}>
       <View style={s.root}>
+        {/* Two stacked dim layers with offset holes feather the spotlight
+            edge: full dim outside both holes, half dim in the 10px rim. */}
         <Svg width={W} height={H} style={StyleSheet.absoluteFillObject}>
-          <Path d={maskPath(step.rect)} fill="rgba(10,20,19,0.78)" fillRule="evenodd" />
+          <Path d={maskPath(step.rect, PAD + 10)} fill="rgba(10,20,19,0.48)" fillRule="evenodd" />
+          <Path d={maskPath(step.rect, PAD)} fill="rgba(10,20,19,0.48)" fillRule="evenodd" />
         </Svg>
 
         <View style={[s.card, cardPos]}>

@@ -264,7 +264,9 @@ export default function ProfileScreen() {
               style={s.row}
               onPress={async () => {
                 await requestTourReplay().catch(() => {});
-                router.navigate('/(tabs)');
+                // '/' targets the Home tab explicitly; '/(tabs)' resolves to
+                // the group we're already inside and never switches tabs.
+                router.navigate('/');
               }}
               activeOpacity={0.7}
             >
