@@ -14,7 +14,7 @@
       "backgroundColor": "#00605A"
     },
     "ios": {
-      "supportsTablet": true,
+      "supportsTablet": false,
       "bundleIdentifier": "com.stampdbahamas.app",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false

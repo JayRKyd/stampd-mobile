@@ -15,6 +15,9 @@ import { useCachedData } from '@/lib/dataCache';
 import { Colors, FontFamily, Palette as J, Shadow } from '@/constants/theme';
 import { PinCard } from '@/components/PinCard';
 
+// App Store Connect > App Information > Apple ID (numeric).
+const APP_STORE_ID = '6791025505';
+
 export default function ProfileScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -129,13 +132,17 @@ export default function ProfileScreen() {
     Linking.openURL(url).catch(() => {});
   }
 
-  // market:// opens the Play Store app directly; the web URL is the fallback
-  // for devices without it (emulators, some tablets).
+  // Opens the platform's store listing on its review page; the https URL is
+  // the fallback for devices without the store app (emulators, some tablets).
   async function rateApp() {
-    const market = 'market://details?id=com.stampdbahamas.app';
-    const web = 'https://play.google.com/store/apps/details?id=com.stampdbahamas.app';
+    const deep = Platform.OS === 'ios'
+      ? `itms-apps://apps.apple.com/app/id${APP_STORE_ID}?action=write-review`
+      : 'market://details?id=com.stampdbahamas.app';
+    const web = Platform.OS === 'ios'
+      ? `https://apps.apple.com/app/id${APP_STORE_ID}`
+      : 'https://play.google.com/store/apps/details?id=com.stampdbahamas.app';
     try {
-      if (await Linking.canOpenURL(market)) await Linking.openURL(market);
+      if (await Linking.canOpenURL(deep)) await Linking.openURL(deep);
       else await Linking.openURL(web);
     } catch {
       Linking.openURL(web).catch(() => {});
@@ -265,15 +272,11 @@ export default function ProfileScreen() {
           {/* About */}
           <Text style={s.sectionLabel}>ABOUT</Text>
           <View style={s.accountCard}>
-            {Platform.OS === 'android' && (
-              <>
-                <TouchableOpacity style={s.row} onPress={rateApp} activeOpacity={0.7}>
-                  <Text style={s.rowLabel}>Rate Stampd</Text>
-                  <Ionicons name="chevron-forward" size={14} color={J.inkSoft} />
-                </TouchableOpacity>
-                <View style={s.divider} />
-              </>
-            )}
+            <TouchableOpacity style={s.row} onPress={rateApp} activeOpacity={0.7}>
+              <Text style={s.rowLabel}>Rate Stampd</Text>
+              <Ionicons name="chevron-forward" size={14} color={J.inkSoft} />
+            </TouchableOpacity>
+            <View style={s.divider} />
             <TouchableOpacity
               style={s.row}
               onPress={async () => {
