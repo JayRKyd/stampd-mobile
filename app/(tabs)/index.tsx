@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -12,7 +12,7 @@ import {
   NativeScrollEvent,
 } from 'react-native';
 import { Image } from 'expo-image';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { useIsFocused } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -101,66 +101,72 @@ export default function HomeScreen() {
   const profile = homeData?.profile ?? null;
   const memberships = homeData?.memberships ?? [];
 
-  // First-run walkthrough: once the profile has rendered, measure the real
-  // on-screen targets and spotlight them. Runs once ever (or on Profile's
-  // "App tour" replay). The 550ms delay lets the layout settle first.
-  useEffect(() => {
-    if (!isFocused || !profile || tour) return;
-    let cancelled = false;
-    (async () => {
-      if (!(await consumeTourRequest())) return;
-      setTimeout(() => {
-        if (cancelled) return;
-        const measure = (ref: React.RefObject<View | null>) =>
-          new Promise<CoachStep['rect'] | null>((resolve) => {
-            if (!ref.current) return resolve(null);
-            ref.current.measureInWindow((x, y, width, height) =>
-              resolve(width > 0 && height > 0 ? { x, y, width, height } : null),
-            );
-          });
-        Promise.all([measure(pinWrapRef), measure(toggleRef)]).then(([pinRectRaw, toggleRectRaw]) => {
+  // First-run walkthrough: every time Home gains focus, check whether a tour
+  // is queued (first run, or a "App tour" replay from Profile). useFocusEffect
+  // fires reliably on focus — a plain isFocused effect missed the replay
+  // because the flag flips before the screen re-renders. Measure the real
+  // on-screen targets so the spotlight lines up on any device.
+  useFocusEffect(
+    useCallback(() => {
+      let cancelled = false;
+      let timer: ReturnType<typeof setTimeout> | undefined;
+      (async () => {
+        if (!(await consumeTourRequest()) || cancelled) return;
+        // Step 1 spotlights the PIN card, so make sure that view is showing.
+        setView('shops');
+        timer = setTimeout(() => {
           if (cancelled) return;
-          const isIOS = Platform.OS === 'ios';
-          const tabBarHeight = isIOS
-            ? (insets.bottom > 0 ? 66 + insets.bottom : 88)
-            : (insets.bottom > 0 ? 70 + insets.bottom : 86);
-          // Elements can extend behind the tab bar (e.g. the PIN card on
-          // short screens); clip their spotlight so it stops above the bar.
-          const maxY = SCREEN_H - tabBarHeight - 14;
-          const clamp = (r: CoachStep['rect'] | null) => {
-            if (!r) return null;
-            if (r.y >= maxY) return null;
-            return r.y + r.height > maxY ? { ...r, height: maxY - r.y } : r;
-          };
-          const pinRect = clamp(pinRectRaw);
-          const toggleRect = clamp(toggleRectRaw);
-          const steps: CoachStep[] = [];
-          if (pinRect) {
-            steps.push({
-              title: 'Your PIN is your loyalty card',
-              body: 'Show this six-digit number when you pay. The merchant types it in and your stamp lands right away.',
-              rect: pinRect,
+          const measure = (ref: React.RefObject<View | null>) =>
+            new Promise<CoachStep['rect'] | null>((resolve) => {
+              if (!ref.current) return resolve(null);
+              ref.current.measureInWindow((x, y, width, height) =>
+                resolve(width > 0 && height > 0 ? { x, y, width, height } : null),
+              );
             });
-          }
-          if (toggleRect) {
+          Promise.all([measure(pinWrapRef), measure(toggleRef)]).then(([pinRectRaw, toggleRectRaw]) => {
+            if (cancelled) return;
+            const isIOS = Platform.OS === 'ios';
+            const tabBarHeight = isIOS
+              ? (insets.bottom > 0 ? 66 + insets.bottom : 88)
+              : (insets.bottom > 0 ? 70 + insets.bottom : 86);
+            // Elements can extend behind the tab bar (e.g. the PIN card on
+            // short screens); clip their spotlight so it stops above the bar.
+            const maxY = SCREEN_H - tabBarHeight - 14;
+            const clamp = (r: CoachStep['rect'] | null) => {
+              if (!r) return null;
+              if (r.y >= maxY) return null;
+              return r.y + r.height > maxY ? { ...r, height: maxY - r.y } : r;
+            };
+            const pinRect = clamp(pinRectRaw);
+            const toggleRect = clamp(toggleRectRaw);
+            const steps: CoachStep[] = [];
+            if (pinRect) {
+              steps.push({
+                title: 'Your PIN is your loyalty card',
+                body: 'Show this six-digit number when you pay. The merchant types it in and your stamp lands right away.',
+                rect: pinRect,
+              });
+            }
+            if (toggleRect) {
+              steps.push({
+                title: 'Flip between PIN and Cards',
+                body: 'Cards shows every shop you have visited and how close each reward is. Your first stamp adds a card automatically.',
+                rect: toggleRect,
+              });
+            }
             steps.push({
-              title: 'Flip between PIN and Cards',
-              body: 'Cards shows every shop you have visited and how close each reward is. Your first stamp adds a card automatically.',
-              rect: toggleRect,
+              title: 'Discover shops, claim rewards',
+              body: 'Discover lists every place on Stampd, with directions to their door. Rewards is where your free stuff appears.',
+              rect: { x: 6, y: SCREEN_H - tabBarHeight, width: SCREEN_W - 12, height: tabBarHeight - 4 },
             });
-          }
-          steps.push({
-            title: 'Discover shops, claim rewards',
-            body: 'Discover lists every place on Stampd, with directions to their door. Rewards is where your free stuff appears.',
-            rect: { x: 6, y: SCREEN_H - tabBarHeight, width: SCREEN_W - 12, height: tabBarHeight - 4 },
+            if (steps.length > 0) setTour(steps);
           });
-          if (steps.length > 0) setTour(steps);
-        });
-      }, 550);
-    })();
-    return () => { cancelled = true; };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isFocused, profile, tour]);
+        }, 550);
+      })();
+      return () => { cancelled = true; if (timer) clearTimeout(timer); };
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [insets.bottom]),
+  );
 
   const greeting = displayFirstName(profile);
   const rawPin = profile?.personal_pin ?? '';
