@@ -333,8 +333,17 @@ export default function ProfileScreen() {
       </View>
 
       {/* Edit name sheet */}
-      <Modal visible={editVisible} animationType="slide" transparent onRequestClose={() => setEditVisible(false)}>
-        <KeyboardAvoidingView style={s.modalOverlay} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <Modal
+        visible={editVisible}
+        animationType="slide"
+        transparent
+        statusBarTranslucent
+        onRequestClose={() => setEditVisible(false)}
+      >
+        {/* Android needs explicit keyboard avoidance here: with edge-to-edge
+            enabled the window no longer resizes for the keyboard, so the
+            bottom sheet was rendering underneath it. */}
+        <KeyboardAvoidingView style={s.modalOverlay} behavior="padding">
           <TouchableOpacity style={s.modalBackdrop} activeOpacity={1} onPress={() => setEditVisible(false)} />
           <View style={s.modalSheet}>
             <View style={s.sheetHandle} />
