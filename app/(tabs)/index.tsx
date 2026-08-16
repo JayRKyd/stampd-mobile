@@ -8,6 +8,7 @@ import {
   Clipboard,
   Dimensions,
   Platform,
+  StatusBar,
   NativeSyntheticEvent,
   NativeScrollEvent,
 } from 'react-native';
@@ -68,6 +69,7 @@ export default function HomeScreen() {
   const [tour, setTour] = useState<CoachStep[] | null>(null);
   const pinWrapRef = useRef<View>(null);
   const toggleRef = useRef<View>(null);
+  const rootRef = useRef<View>(null);
 
   const copyPinToClipboard = (pin: string) => {
     if (!pin) return;
@@ -123,22 +125,35 @@ export default function HomeScreen() {
                 resolve(width > 0 && height > 0 ? { x, y, width, height } : null),
               );
             });
-          Promise.all([measure(pinWrapRef), measure(toggleRef)]).then(([pinRectRaw, toggleRectRaw]) => {
+          Promise.all([measure(pinWrapRef), measure(toggleRef), measure(rootRef)]).then(([pinRaw, toggleRaw, rootRect]) => {
             if (cancelled) return;
+            // Android's measureInWindow excludes the status bar even in
+            // edge-to-edge mode, while the spotlight modal (statusBarTranslucent)
+            // spans the real screen — shift every rect down to compensate.
+            const yOffset = Platform.OS === 'android' ? (StatusBar.currentHeight ?? 0) : 0;
+            const shift = (r: CoachStep['rect'] | null) =>
+              r ? { ...r, y: r.y + yOffset } : null;
             const isIOS = Platform.OS === 'ios';
             const tabBarHeight = isIOS
               ? (insets.bottom > 0 ? 66 + insets.bottom : 88)
               : (insets.bottom > 0 ? 70 + insets.bottom : 86);
+            // The tab bar starts where the screen's root view ends — derive it
+            // from the same measurement pass instead of screen-height math so
+            // step 3 shares the coordinate system of steps 1 and 2.
+            const rootShifted = shift(rootRect);
+            const tabTop = rootShifted
+              ? rootShifted.y + rootShifted.height
+              : SCREEN_H + yOffset - tabBarHeight;
             // Elements can extend behind the tab bar (e.g. the PIN card on
             // short screens); clip their spotlight so it stops above the bar.
-            const maxY = SCREEN_H - tabBarHeight - 14;
+            const maxY = tabTop - 14;
             const clamp = (r: CoachStep['rect'] | null) => {
               if (!r) return null;
               if (r.y >= maxY) return null;
               return r.y + r.height > maxY ? { ...r, height: maxY - r.y } : r;
             };
-            const pinRect = clamp(pinRectRaw);
-            const toggleRect = clamp(toggleRectRaw);
+            const pinRect = clamp(shift(pinRaw));
+            const toggleRect = clamp(shift(toggleRaw));
             const steps: CoachStep[] = [];
             if (pinRect) {
               steps.push({
@@ -157,7 +172,7 @@ export default function HomeScreen() {
             steps.push({
               title: 'Discover shops, claim rewards',
               body: 'Discover lists every place on Stampd, with directions to their door. Rewards is where your free stuff appears.',
-              rect: { x: 6, y: SCREEN_H - tabBarHeight, width: SCREEN_W - 12, height: tabBarHeight - 4 },
+              rect: { x: 6, y: tabTop, width: SCREEN_W - 12, height: tabBarHeight - 4 },
             });
             if (steps.length > 0) setTour(steps);
           });
@@ -277,7 +292,7 @@ export default function HomeScreen() {
   }, [isFocused, heroCount]);
 
   return (
-    <View style={s.root}>
+    <View style={s.root} ref={rootRef} collapsable={false}>
         {/* ===== Teal header ===== */}
         <View style={[s.header, { paddingTop: insets.top + 10 }]}>
           {/* Location badge — static until multi-island launch */}

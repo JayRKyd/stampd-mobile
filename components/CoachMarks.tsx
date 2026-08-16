@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Modal, View, Text, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
+import { Modal, View, Text, TouchableOpacity, StyleSheet, Dimensions, Platform } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 import { FontFamily, Palette as J } from '@/constants/theme';
 
@@ -15,7 +15,9 @@ export type CoachStep = {
 
 const PAD = 8;          // breathing room around the highlighted element
 const HOLE_RADIUS = 18; // matches the app's card radii closely enough
-const { width: W, height: H } = Dimensions.get('window');
+// The statusBarTranslucent modal spans the true screen on Android, where
+// 'window' excludes the status bar — size the dim canvas to match the modal.
+const { width: W, height: H } = Dimensions.get(Platform.OS === 'android' ? 'screen' : 'window');
 
 // Full-screen rect with a rounded-rect hole, via even-odd fill.
 function maskPath(r: CoachStep['rect'], pad: number): string {
