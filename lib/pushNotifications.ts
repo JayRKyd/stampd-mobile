@@ -55,7 +55,9 @@ export async function registerPushToken(): Promise<void> {
 
   const platform = Platform.OS === 'ios' ? 'ios' : 'android';
 
-  // Remove any prior row for this token, then insert fresh (works without a unique index)
+  // token has a unique constraint; a DB trigger (claim_push_token) deletes any
+  // other account's row for this token on insert, since RLS blocks us from
+  // deleting it here. We can only clear our own prior row.
   await supabase.from('push_tokens').delete().eq('user_id', user.id).eq('token', token);
   await supabase.from('push_tokens').insert({ user_id: user.id, token, platform });
 }
