@@ -150,6 +150,8 @@ Merchant side: laptop on `/stamp`. Customer side: phone on Home (PIN visible).
 - [ ] Dashboard Settings → Counter mode → "Turn on counter mode" → you land on the Stamp page with a minimal header ("Counter mode" badge, Exit button) and no sidebar
 - [ ] Try to reach `/dashboard`, `/customers`, `/settings` by typing the URL → every one of them bounces you straight back to `/stamp`
 - [ ] Stamping still works fully: staff picker, staff PIN (if required), quantity, guest PIN
+- [ ] **Redeem from the counter**: enter the PIN of a customer with a pending reward → gold "Ready to redeem" block appears on the found card → Redeem (staff PIN gate applies if on) → "Reward Redeemed" screen; customer gets the in-app/push confirmation and the reward shows Redeemed in their history
+- [ ] Redeeming the same reward twice fails cleanly ("already redeemed")
 - [ ] Refresh the page → still locked (survives reload)
 - [ ] Exit with a WRONG password → "Incorrect password", still locked
 - [ ] Exit with the right password → full dashboard is back
