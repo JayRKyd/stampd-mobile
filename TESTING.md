@@ -154,6 +154,7 @@ Merchant side: laptop on `/stamp`. Customer side: phone on Home (PIN visible).
 - [ ] **Redeem at the earned moment**: issue a card-completing stamp → success screen shows a gold "Mark as Redeemed" button → one tap redeems without re-entering the customer PIN
 - [ ] Redeeming the same reward twice fails cleanly ("already redeemed")
 - [ ] **Staff PIN is server-verified (hashed)**: with "Require staff PIN" on, a WRONG staff PIN is rejected, the RIGHT one passes; in Supabase, `staff.pin` is NULL and `staff.pin_hash` starts with `$2a$` for that staff member
+- [ ] **Forgotten PIN recovery**: Settings → staff list → key icon → set a new 4-digit PIN → old PIN stops working on the Stamp page, new one passes; the same flow adds a PIN to a "No PIN — can't stamp" staff member
 - [ ] **Redemption attribution**: after a redeem, the `rewards` row has `redeemed_by_staff_id` set to the staff member who confirmed it
 - [ ] Refresh the page → still locked (survives reload)
 - [ ] Exit with a WRONG password → "Incorrect password", still locked
