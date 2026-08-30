@@ -151,7 +151,10 @@ Merchant side: laptop on `/stamp`. Customer side: phone on Home (PIN visible).
 - [ ] Try to reach `/dashboard`, `/customers`, `/settings` by typing the URL → every one of them bounces you straight back to `/stamp`
 - [ ] Stamping still works fully: staff picker, staff PIN (if required), quantity, guest PIN
 - [ ] **Redeem from the counter**: enter the PIN of a customer with a pending reward → gold "Ready to redeem" block appears on the found card → Redeem (staff PIN gate applies if on) → "Reward Redeemed" screen; customer gets the in-app/push confirmation and the reward shows Redeemed in their history
+- [ ] **Redeem at the earned moment**: issue a card-completing stamp → success screen shows a gold "Mark as Redeemed" button → one tap redeems without re-entering the customer PIN
 - [ ] Redeeming the same reward twice fails cleanly ("already redeemed")
+- [ ] **Staff PIN is server-verified (hashed)**: with "Require staff PIN" on, a WRONG staff PIN is rejected, the RIGHT one passes; in Supabase, `staff.pin` is NULL and `staff.pin_hash` starts with `$2a$` for that staff member
+- [ ] **Redemption attribution**: after a redeem, the `rewards` row has `redeemed_by_staff_id` set to the staff member who confirmed it
 - [ ] Refresh the page → still locked (survives reload)
 - [ ] Exit with a WRONG password → "Incorrect password", still locked
 - [ ] Exit with the right password → full dashboard is back
