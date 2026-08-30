@@ -8,6 +8,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '@/lib/supabase';
 import { WEB_URL } from '@/lib/webLinks';
+import { SocialAuthButtons } from '@/components/SocialAuthButtons';
 import { Colors, FontFamily, Palette as J, Shadow } from '@/constants/theme';
 
 const TERMS_VERSION = '1.0';
@@ -202,6 +203,20 @@ export default function LoginScreen() {
             : 'A minute from now you\'ll be collecting stamps.'}
         </Text>
 
+        {/* Fastest path: no password, no confirmation email */}
+        <View style={s.socialWrap}>
+          <SocialAuthButtons
+            tone="light"
+            onSuccess={() => router.replace('/(tabs)')}
+            onError={setError}
+          />
+        </View>
+        <View style={s.dividerRow}>
+          <View style={s.dividerLine} />
+          <Text style={s.dividerText}>or use email</Text>
+          <View style={s.dividerLine} />
+        </View>
+
         {/* Name group (signup only) */}
         {mode === 'signup' && (
           <View style={s.inputGroup}>
@@ -384,6 +399,19 @@ const s = StyleSheet.create({
     color: J.ink,
     letterSpacing: -0.6,
     marginBottom: 6,
+  },
+  socialWrap: { marginTop: 20 },
+  dividerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginVertical: 18,
+  },
+  dividerLine: { flex: 1, height: 1, backgroundColor: 'rgba(0,0,0,0.1)' },
+  dividerText: {
+    fontSize: 12,
+    fontFamily: FontFamily.medium,
+    color: J.inkMuted,
   },
   sub: {
     fontSize: 14,

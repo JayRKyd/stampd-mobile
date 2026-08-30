@@ -1,13 +1,16 @@
+import { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
+import { SocialAuthButtons } from '@/components/SocialAuthButtons';
 import { Colors, FontFamily, Palette as J } from '@/constants/theme';
 
 export default function WelcomeScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const [socialError, setSocialError] = useState('');
 
   return (
     <View style={s.root}>
@@ -53,16 +56,22 @@ export default function WelcomeScreen() {
         </Text>
         <Text style={s.sub2}>One PIN. Every shop.</Text>
 
+        <View style={s.socialWrap}>
+          <SocialAuthButtons
+            tone="dark"
+            onSuccess={() => router.replace('/(tabs)')}
+            onError={setSocialError}
+          />
+          {!!socialError && <Text style={s.socialError}>{socialError}</Text>}
+        </View>
+
         <View style={s.btnRow}>
           <TouchableOpacity
-            style={s.btnPrimary}
+            style={s.btnSecondary}
             onPress={() => router.navigate({ pathname: '/(auth)/login', params: { mode: 'signup' } })}
             activeOpacity={0.9}
           >
-            <Text style={s.btnPrimaryText}>Sign up</Text>
-            <View style={s.btnPrimaryArrow}>
-              <Ionicons name="arrow-forward" size={14} color={J.cream} />
-            </View>
+            <Text style={s.btnSecondaryText}>Sign up with email</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -77,7 +86,9 @@ export default function WelcomeScreen() {
           </TouchableOpacity>
         </View>
 
-        <Text style={s.terms}>Free for customers · No credit card needed</Text>
+        <Text style={s.terms}>
+          Free for customers · By continuing you agree to our Terms of Service and Privacy Policy
+        </Text>
       </View>
     </View>
   );
@@ -145,7 +156,15 @@ const s = StyleSheet.create({
     marginTop: 12,
   },
 
-  btnRow: { flexDirection: 'row', gap: 10, marginTop: 28 },
+  socialWrap: { marginTop: 28 },
+  socialError: {
+    marginTop: 10,
+    textAlign: 'center',
+    fontSize: 12.5,
+    fontFamily: FontFamily.medium,
+    color: '#FFB4A8',
+  },
+  btnRow: { flexDirection: 'row', gap: 10, marginTop: 10 },
   btnPrimary: {
     flex: 1,
     height: 56,
