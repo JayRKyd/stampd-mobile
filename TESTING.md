@@ -63,6 +63,11 @@ New merchants are `is_active = false` and cannot stamp until approved.
 ## 3. Phase 2 — Customer setup (mobile)
 
 - [ ] Open the TestFlight build → welcome screen (image, "Grand Bahama" chip) looks right
+- [ ] **Social sign-in (v1.0.3)**: welcome screen shows "Continue with Apple" (iPhone only) and "Continue with Google" with the official multicolor G; same buttons on the login screen above an "or use email" divider
+- [ ] **Continue with Google** → native account sheet → picks account → lands on Home signed in; first/last name filled on Profile (no complete-profile detour); no email confirmation step anywhere
+- [ ] **Continue with Apple** (iPhone) → Face ID sheet → lands on Home; if "Hide My Email" was chosen, everything still works; name captured on FIRST sign-in
+- [ ] Cancelling either sheet returns quietly to the screen — no error banner
+- [ ] Social account earns a stamp + gets pushes like any email account (registerPushToken ran on sign-in)
 - [ ] Sign up as Ana (`+ana`) — first/last name, email, password
 - [ ] **Name profanity filter**: try a vulgar first name (e.g. `Sh1t`) at sign-up → inline error "That name can't be used…" and nothing saves; a real name that merely contains a rude substring (e.g. `Cassandra`, `Dickson`) is accepted. Same check on Profile → edit name.
 - [ ] **iOS should NOT hijack the password field with the yellow "strong password" overlay** — you type your own password
