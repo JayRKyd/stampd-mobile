@@ -1,12 +1,18 @@
 import { Platform } from 'react-native';
 import * as AppleAuthentication from 'expo-apple-authentication';
 import * as Crypto from 'expo-crypto';
-import {
-  GoogleSignin,
-  isErrorWithCode,
-  statusCodes,
-} from '@react-native-google-signin/google-signin';
 import { supabase } from '@/lib/supabase';
+
+// Loaded lazily: the Google Sign-In native module doesn't exist in Expo Go,
+// and a top-level import would crash the auth screens there. In a dev/EAS
+// build the require succeeds; in Expo Go the button shows a clear message.
+function loadGoogleSignin(): typeof import('@react-native-google-signin/google-signin') | null {
+  try {
+    return require('@react-native-google-signin/google-signin');
+  } catch {
+    return null;
+  }
+}
 
 const TERMS_VERSION = '1.0';
 const PRIVACY_VERSION = '1.0';
@@ -17,9 +23,9 @@ export type SocialResult =
   | { ok: false; cancelled: false; error: string };
 
 let googleConfigured = false;
-function configureGoogle() {
+function configureGoogle(g: NonNullable<ReturnType<typeof loadGoogleSignin>>) {
   if (googleConfigured) return;
-  GoogleSignin.configure({
+  g.GoogleSignin.configure({
     // The WEB client ID (not the platform ones) — Supabase validates the
     // idToken audience against this. Platform client IDs are picked up from
     // the native build config.
@@ -119,10 +125,18 @@ export async function signInWithApple(): Promise<SocialResult> {
 }
 
 export async function signInWithGoogle(): Promise<SocialResult> {
+  const g = loadGoogleSignin();
+  if (!g) {
+    return {
+      ok: false,
+      cancelled: false,
+      error: 'Google sign-in needs the full app build (not available in Expo Go).',
+    };
+  }
   try {
-    configureGoogle();
-    await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
-    const response = await GoogleSignin.signIn();
+    configureGoogle(g);
+    await g.GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
+    const response = await g.GoogleSignin.signIn();
 
     if (response.type === 'cancelled') return { ok: false, cancelled: true };
     const idToken = response.data?.idToken;
@@ -142,9 +156,9 @@ export async function signInWithGoogle(): Promise<SocialResult> {
     });
     return { ok: true };
   } catch (e: unknown) {
-    if (isErrorWithCode(e)) {
-      if (e.code === statusCodes.SIGN_IN_CANCELLED) return { ok: false, cancelled: true };
-      if (e.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
+    if (g.isErrorWithCode(e)) {
+      if (e.code === g.statusCodes.SIGN_IN_CANCELLED) return { ok: false, cancelled: true };
+      if (e.code === g.statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
         return { ok: false, cancelled: false, error: 'Google Play Services is not available on this device.' };
       }
     }

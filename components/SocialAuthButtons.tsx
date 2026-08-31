@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Platform } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Platform, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { signInWithApple, signInWithGoogle } from '@/lib/socialAuth';
 import { FontFamily, Palette as J } from '@/constants/theme';
@@ -54,7 +54,8 @@ export function SocialAuthButtons({ tone, onSuccess, onError }: Props) {
           <ActivityIndicator color={J.ink} />
         ) : (
           <>
-            <Ionicons name="logo-google" size={18} color={J.ink} />
+            {/* Official Google G (branding kit), transparent background */}
+            <Image source={require('@/assets/google-g.png')} style={s.googleIcon} />
             <Text style={[s.btnText, { color: J.ink }]}>Continue with Google</Text>
           </>
         )}
@@ -74,6 +75,7 @@ const s = StyleSheet.create({
     gap: 10,
   },
   btnText: { fontSize: 15, fontFamily: FontFamily.bold },
+  googleIcon: { width: 20, height: 20 },
 
   appleDark: { backgroundColor: '#fff' },
   appleLight: { backgroundColor: '#000' },

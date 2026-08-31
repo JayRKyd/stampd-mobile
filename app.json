@@ -3,7 +3,7 @@
     "name": "Stampd",
     "slug": "stampd-bahamas",
     "scheme": "stampd",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -59,7 +59,7 @@
       [
         "@react-native-google-signin/google-signin",
         {
-          "iosUrlScheme": "com.googleusercontent.apps.REPLACE-WITH-IOS-CLIENT-ID"
+          "iosUrlScheme": "com.googleusercontent.apps.260743851123-sntceefkh14d5l7gnbupf42m66hi3lr7"
         }
       ]
     ],
