@@ -25,11 +25,18 @@ export type SocialResult =
 let googleConfigured = false;
 function configureGoogle(g: NonNullable<ReturnType<typeof loadGoogleSignin>>) {
   if (googleConfigured) return;
+  // Android is bound (via google-services.json) to the Firebase project, so
+  // its Google Sign-In web client must live in that SAME project or the
+  // native call fails with DEVELOPER_ERROR. iOS has no such binding and
+  // uses the original project's web client. Both audiences are trusted by
+  // Supabase. Supabase validates the idToken audience against webClientId.
+  const webClientId =
+    Platform.OS === 'android'
+      ? (process.env.EXPO_PUBLIC_GOOGLE_ANDROID_WEB_CLIENT_ID ??
+         process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID)
+      : process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID;
   g.GoogleSignin.configure({
-    // The WEB client ID (not the platform ones) — Supabase validates the
-    // idToken audience against this. Platform client IDs are picked up from
-    // the native build config.
-    webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
+    webClientId,
     iosClientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID,
   });
   googleConfigured = true;
@@ -161,7 +168,11 @@ export async function signInWithGoogle(): Promise<SocialResult> {
       if (e.code === g.statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
         return { ok: false, cancelled: false, error: 'Google Play Services is not available on this device.' };
       }
+      // Surface the real code (e.g. DEVELOPER_ERROR) so config problems are
+      // diagnosable from the device instead of hidden behind a generic message.
+      return { ok: false, cancelled: false, error: `Google sign-in failed (${String(e.code)}). Try again.` };
     }
-    return { ok: false, cancelled: false, error: 'Google sign-in failed. Try again.' };
+    const msg = (e as { message?: string })?.message;
+    return { ok: false, cancelled: false, error: `Google sign-in failed${msg ? `: ${msg}` : ''}. Try again.` };
   }
 }

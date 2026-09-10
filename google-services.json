@@ -12,7 +12,20 @@
           "package_name": "com.stampdbahamas.app"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "212158926484-mdk7gq98ka5gcddfgv8f93hjng0irj2c.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.stampdbahamas.app",
+            "certificate_hash": "6e1e5d8c8599c466f76fd7b50653805d2e04c819"
+          }
+        },
+        {
+          "client_id": "212158926484-o3nde3e97mhenr9djg1j5e9olovglu55.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyB4UJJQxfrkZQtjLb1kYNARxh35nEwuVlM"
@@ -20,7 +33,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "212158926484-o3nde3e97mhenr9djg1j5e9olovglu55.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }
