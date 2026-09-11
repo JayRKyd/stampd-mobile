@@ -1,14 +1,28 @@
 import { Platform } from 'react-native';
-import * as AppleAuthentication from 'expo-apple-authentication';
-import * as Crypto from 'expo-crypto';
 import { supabase } from '@/lib/supabase';
 
-// Loaded lazily: the Google Sign-In native module doesn't exist in Expo Go,
-// and a top-level import would crash the auth screens there. In a dev/EAS
-// build the require succeeds; in Expo Go the button shows a clear message.
+// ALL native auth modules are loaded lazily (require at call time), never as
+// top-level imports. A static import of any of these runs when the welcome/
+// login screen mounts, and if the native module is missing (Expo Go, or a
+// build where a pod didn't link) it crashes the app on open. Loading them
+// only when a sign-in button is tapped keeps the screens safe everywhere.
 function loadGoogleSignin(): typeof import('@react-native-google-signin/google-signin') | null {
   try {
     return require('@react-native-google-signin/google-signin');
+  } catch {
+    return null;
+  }
+}
+function loadAppleAuth(): typeof import('expo-apple-authentication') | null {
+  try {
+    return require('expo-apple-authentication');
+  } catch {
+    return null;
+  }
+}
+function loadCrypto(): typeof import('expo-crypto') | null {
+  try {
+    return require('expo-crypto');
   } catch {
     return null;
   }
@@ -88,6 +102,11 @@ async function backfillMetadata(names?: { first?: string | null; last?: string |
 export async function signInWithApple(): Promise<SocialResult> {
   if (Platform.OS !== 'ios') {
     return { ok: false, cancelled: false, error: 'Apple sign-in is only available on iPhone.' };
+  }
+  const AppleAuthentication = loadAppleAuth();
+  const Crypto = loadCrypto();
+  if (!AppleAuthentication || !Crypto) {
+    return { ok: false, cancelled: false, error: 'Apple sign-in needs the full app build.' };
   }
   try {
     // Nonce ties the Apple token to this attempt: Apple gets the hash,

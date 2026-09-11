@@ -101,7 +101,9 @@ export default function HomeScreen() {
   });
 
   const profile = homeData?.profile ?? null;
-  const memberships = homeData?.memberships ?? [];
+  // Never render a card whose merchant didn't resolve (a shop that's hidden,
+  // deleted, or a stale pre-fix cache) — a null merchant here crashed Home.
+  const memberships = (homeData?.memberships ?? []).filter(m => m.merchants);
 
   // First-run walkthrough: every time Home gains focus, check whether a tour
   // is queued (first run, or a "App tour" replay from Profile). useFocusEffect
