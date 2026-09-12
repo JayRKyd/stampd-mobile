@@ -36,19 +36,24 @@ export type SocialResult =
   | { ok: false; cancelled: true }
   | { ok: false; cancelled: false; error: string };
 
+// Android must use the Firebase-project (212158926484) web client — the same
+// project google-services.json binds to. Hardcoded rather than read from an
+// EXPO_PUBLIC_ env var to eliminate any build-time inlining risk (if that var
+// ever failed to inline, Android silently fell back to the old-project client
+// and every sign-in hit DEVELOPER_ERROR). This is a public client ID, not a
+// secret — it already ships inside google-services.json.
+const ANDROID_WEB_CLIENT_ID =
+  '212158926484-o3nde3e97mhenr9djg1j5e9olovglu55.apps.googleusercontent.com';
+
 let googleConfigured = false;
+let lastWebClientId: string | undefined;
 function configureGoogle(g: NonNullable<ReturnType<typeof loadGoogleSignin>>) {
-  if (googleConfigured) return;
-  // Android is bound (via google-services.json) to the Firebase project, so
-  // its Google Sign-In web client must live in that SAME project or the
-  // native call fails with DEVELOPER_ERROR. iOS has no such binding and
-  // uses the original project's web client. Both audiences are trusted by
-  // Supabase. Supabase validates the idToken audience against webClientId.
   const webClientId =
     Platform.OS === 'android'
-      ? (process.env.EXPO_PUBLIC_GOOGLE_ANDROID_WEB_CLIENT_ID ??
-         process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID)
+      ? ANDROID_WEB_CLIENT_ID
       : process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID;
+  lastWebClientId = webClientId;
+  if (googleConfigured) return;
   g.GoogleSignin.configure({
     webClientId,
     iosClientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID,
@@ -187,9 +192,16 @@ export async function signInWithGoogle(): Promise<SocialResult> {
       if (e.code === g.statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
         return { ok: false, cancelled: false, error: 'Google Play Services is not available on this device.' };
       }
-      // Surface the real code (e.g. DEVELOPER_ERROR) so config problems are
-      // diagnosable from the device instead of hidden behind a generic message.
-      return { ok: false, cancelled: false, error: `Google sign-in failed (${String(e.code)}). Try again.` };
+      // TEMP DIAGNOSTIC: surface the exact status code, which web client was
+      // used (o3nde = correct project, mp0iv = wrong project), and any native
+      // message, so a failing device tells us the real cause on screen.
+      const cid = (lastWebClientId ?? 'none').replace('.apps.googleusercontent.com', '');
+      const nativeMsg = (e as { message?: string }).message ?? '';
+      return {
+        ok: false,
+        cancelled: false,
+        error: `Sign-in failed (${String(e.code)}) · ${cid}${nativeMsg ? ' · ' + nativeMsg : ''}`,
+      };
     }
     const msg = (e as { message?: string })?.message;
     return { ok: false, cancelled: false, error: `Google sign-in failed${msg ? `: ${msg}` : ''}. Try again.` };
