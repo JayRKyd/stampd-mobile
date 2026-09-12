@@ -46,13 +46,11 @@ const ANDROID_WEB_CLIENT_ID =
   '212158926484-o3nde3e97mhenr9djg1j5e9olovglu55.apps.googleusercontent.com';
 
 let googleConfigured = false;
-let lastWebClientId: string | undefined;
 function configureGoogle(g: NonNullable<ReturnType<typeof loadGoogleSignin>>) {
   const webClientId =
     Platform.OS === 'android'
       ? ANDROID_WEB_CLIENT_ID
       : process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID;
-  lastWebClientId = webClientId;
   if (googleConfigured) return;
   g.GoogleSignin.configure({
     webClientId,
@@ -192,16 +190,9 @@ export async function signInWithGoogle(): Promise<SocialResult> {
       if (e.code === g.statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
         return { ok: false, cancelled: false, error: 'Google Play Services is not available on this device.' };
       }
-      // TEMP DIAGNOSTIC: surface the exact status code, which web client was
-      // used (o3nde = correct project, mp0iv = wrong project), and any native
-      // message, so a failing device tells us the real cause on screen.
-      const cid = (lastWebClientId ?? 'none').replace('.apps.googleusercontent.com', '');
-      const nativeMsg = (e as { message?: string }).message ?? '';
-      return {
-        ok: false,
-        cancelled: false,
-        error: `Sign-in failed (${String(e.code)}) · ${cid}${nativeMsg ? ' · ' + nativeMsg : ''}`,
-      };
+      // Surface the real code (e.g. DEVELOPER_ERROR) so config problems are
+      // diagnosable from the device instead of hidden behind a generic message.
+      return { ok: false, cancelled: false, error: `Google sign-in failed (${String(e.code)}). Try again.` };
     }
     const msg = (e as { message?: string })?.message;
     return { ok: false, cancelled: false, error: `Google sign-in failed${msg ? `: ${msg}` : ''}. Try again.` };
