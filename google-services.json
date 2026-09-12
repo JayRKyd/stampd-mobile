@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "212158926484-ehv8j7f4bmnj1ptcsp09sh752qvmrfr5.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.stampdbahamas.app",
+            "certificate_hash": "22b6db0ee03f3477b6ac856e5602fa8b70077826"
+          }
+        },
+        {
           "client_id": "212158926484-mdk7gq98ka5gcddfgv8f93hjng0irj2c.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
