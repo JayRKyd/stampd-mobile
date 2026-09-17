@@ -1,6 +1,6 @@
 import {
   View, Text, StyleSheet, ScrollView,
-  TouchableOpacity, ActivityIndicator, Linking,
+  TouchableOpacity, ActivityIndicator, Linking, Platform,
 } from 'react-native';
 import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -178,9 +178,18 @@ export default function MerchantDetailScreen() {
   function openCall() {
     if (merchant?.phone) Linking.openURL(`tel:${merchant.phone.replace(/[^+\d]/g, '')}`);
   }
-  function openDirections() {
-    if (mapsQuery) {
-      Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapsQuery)}`);
+  async function openDirections() {
+    if (!mapsQuery) return;
+    const q = encodeURIComponent(mapsQuery);
+    // Some devices can't hand an https maps link to any app (no default
+    // browser/maps set) and Linking.openURL throws. Catch it and fall back to
+    // the native maps scheme so the button always does something — and a
+    // failure never surfaces as an uncaught error in Sentry.
+    try {
+      await Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${q}`);
+    } catch {
+      const fallback = Platform.OS === 'ios' ? `http://maps.apple.com/?q=${q}` : `geo:0,0?q=${q}`;
+      try { await Linking.openURL(fallback); } catch { /* no maps app available */ }
     }
   }
 

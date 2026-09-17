@@ -31,6 +31,10 @@ if (sentryDsn) {
   Sentry.init({
     dsn: sentryDsn,
     tracesSampleRate: 0.1,
+    // Default app-hang detection fires at 2s and floods us with harmless
+    // "App hanging" reports (usually the keyboard/text-input cache warming up
+    // on first use). Raise to 5s so only genuinely bad freezes report.
+    appHangTimeoutInterval: 5,
   });
 }
 
