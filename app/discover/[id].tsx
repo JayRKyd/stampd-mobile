@@ -26,6 +26,8 @@ type Merchant = {
   merchant_type: 'business' | 'individual' | null;
   trade: string | null;
   workplace: string | null;
+  latitude: number | null;
+  longitude: number | null;
 };
 
 type LoyaltyCard = {
@@ -90,6 +92,8 @@ export default function MerchantDetailScreen() {
         merchant_type: m.merchant_type ?? null,
         trade: m.trade ?? null,
         workplace: m.workplace ?? null,
+        latitude: (m as any).latitude ?? null,
+        longitude: (m as any).longitude ?? null,
       };
 
       const { data: lc, error: lcErr } = await supabase
@@ -169,8 +173,12 @@ export default function MerchantDetailScreen() {
   // Merchants sometimes type the "@" themselves — strip it before display/geocoding
   const workplace = merchant.workplace?.replace(/^@\s*/, '') ?? null;
   const categoryLabel = isIndividual && merchant.category === 'Other' ? 'Independent Pro' : merchant.category;
-  // Pros often have no formal address — the workplace name geocodes fine
-  const mapsQuery = merchant.address || (isIndividual ? workplace : null);
+  // Prefer admin-set coordinates for a precise pin; fall back to the typed
+  // address (pros often have no formal address, so their workplace name geocodes).
+  const hasCoords = merchant.latitude != null && merchant.longitude != null;
+  const mapsQuery = hasCoords
+    ? `${merchant.latitude},${merchant.longitude}`
+    : (merchant.address || (isIndividual ? workplace : null));
   const locationLine = isIndividual
     ? (workplace ? `Works at ${workplace}` : merchant.address)
     : merchant.address;
