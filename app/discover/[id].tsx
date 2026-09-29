@@ -1,6 +1,7 @@
+import { useState } from 'react';
 import {
   View, Text, StyleSheet, ScrollView,
-  TouchableOpacity, ActivityIndicator, Linking, Platform,
+  TouchableOpacity, ActivityIndicator, Linking, Platform, Dimensions,
 } from 'react-native';
 import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -13,6 +14,8 @@ import { Colors, FontFamily, Palette as J, Spacing, Shadow } from '@/constants/t
 import { cardGradient, shadeColor } from '@/lib/cardColor';
 import { visitLabelWord } from '@/lib/visitLabel';
 import { StampCard } from '@/components/StampCard';
+
+const SCREEN_W = Dimensions.get('window').width;
 
 type Merchant = {
   id: string;
@@ -55,11 +58,15 @@ export default function MerchantDetailScreen() {
   // Cached like the tab screens: a previously-viewed merchant renders
   // instantly (and offline) while a fresh fetch runs in the background.
   // The fetcher returns null on any network failure so stale data is kept.
+  // Gallery paging dot — declared before any early return so hook order is stable
+  const [photoIndex, setPhotoIndex] = useState(0);
+
   const { data, isLoading, refresh } = useCachedData<{
     unavailable: 'not_found' | 'inactive' | null;
     merchant: Merchant | null;
     card: LoyaltyCard | null;
     membership: Membership | null;
+    photos: string[];
   }>(`merchant:${id}`, async () => {
     try {
       // getSession reads local storage — getUser() is a network call and
@@ -77,8 +84,8 @@ export default function MerchantDetailScreen() {
         .maybeSingle();
 
       if (mErr) return null;
-      if (!m) return { unavailable: 'not_found' as const, merchant: null, card: null, membership: null };
-      if (!m.is_active) return { unavailable: 'inactive' as const, merchant: null, card: null, membership: null };
+      if (!m) return { unavailable: 'not_found' as const, merchant: null, card: null, membership: null, photos: [] };
+      if (!m.is_active) return { unavailable: 'inactive' as const, merchant: null, card: null, membership: null, photos: [] };
 
       const merchant: Merchant = {
         id: m.id,
@@ -112,7 +119,18 @@ export default function MerchantDetailScreen() {
         .maybeSingle();
       if (msErr) return null;
 
-      return { unavailable: null, merchant, card: lc ?? null, membership: ms ?? null };
+      // Gallery photos (up to 3, admin-managed). Errors fall back to the
+      // single cover image rather than failing the whole screen.
+      const { data: ph } = await supabase
+        .from('merchant_photos')
+        .select('url')
+        .eq('merchant_id', id)
+        .order('sort_order');
+
+      return {
+        unavailable: null, merchant, card: lc ?? null, membership: ms ?? null,
+        photos: (ph ?? []).map(p => p.url),
+      };
     } catch {
       return null;
     }
@@ -163,6 +181,12 @@ export default function MerchantDetailScreen() {
     );
   }
 
+  // Hero images: admin gallery when present, else the single cover photo.
+  // One image renders still; two or three page horizontally with dots.
+  const galleryImages = (data?.photos?.length ?? 0) > 0
+    ? data!.photos
+    : merchant.cover_image_url ? [merchant.cover_image_url] : [];
+
   const isMember = !!membership;
   const label = visitLabelWord(card.visit_label, card.stamp_count_required);
   const brand = cardGradient(card.card_color, id ? id.charCodeAt(0) : 0)[0];
@@ -205,9 +229,9 @@ export default function MerchantDetailScreen() {
     <View style={s.root}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: insets.bottom + 40 }}>
 
-        {/* ── Cover ─────────────────────────────────── */}
+        {/* ── Cover / gallery ───────────────────────── */}
         <View style={s.cover}>
-          {/* Brand gradient always paints first — the photo fades in over it,
+          {/* Brand gradient always paints first — photos fade in over it,
               so a slow image shows brand color instead of a white void */}
           <LinearGradient
             colors={[brand, brandDark]}
@@ -215,18 +239,46 @@ export default function MerchantDetailScreen() {
             end={{ x: 1, y: 1 }}
             style={s.coverImg}
           >
-            {!merchant.cover_image_url && (
+            {galleryImages.length === 0 && (
               <Ionicons name={isIndividual ? 'person' : 'storefront'} size={72} color="rgba(255,255,255,0.14)" style={s.coverWatermark} />
             )}
           </LinearGradient>
-          {merchant.cover_image_url ? (
+          {galleryImages.length === 1 ? (
             <Image
-              source={{ uri: merchant.cover_image_url }}
+              source={{ uri: galleryImages[0] }}
               style={StyleSheet.absoluteFillObject}
               contentFit="cover"
               transition={250}
               cachePolicy="memory-disk"
             />
+          ) : galleryImages.length > 1 ? (
+            <>
+              <ScrollView
+                horizontal
+                pagingEnabled
+                showsHorizontalScrollIndicator={false}
+                style={StyleSheet.absoluteFillObject}
+                onMomentumScrollEnd={e =>
+                  setPhotoIndex(Math.round(e.nativeEvent.contentOffset.x / SCREEN_W))
+                }
+              >
+                {galleryImages.map((uri, i) => (
+                  <Image
+                    key={i}
+                    source={{ uri }}
+                    style={{ width: SCREEN_W, height: 220 }}
+                    contentFit="cover"
+                    transition={250}
+                    cachePolicy="memory-disk"
+                  />
+                ))}
+              </ScrollView>
+              <View style={s.galleryDots} pointerEvents="none">
+                {galleryImages.map((_, i) => (
+                  <View key={i} style={[s.galleryDot, i === photoIndex && s.galleryDotActive]} />
+                ))}
+              </View>
+            </>
           ) : null}
           {/* Soft scrim so the back button always reads */}
           <LinearGradient
@@ -428,6 +480,22 @@ const s = StyleSheet.create({
 
   // Cover
   cover: { height: 220, backgroundColor: J.teal },
+  galleryDots: {
+    position: 'absolute',
+    bottom: 12,
+    left: 0,
+    right: 0,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 6,
+  },
+  galleryDot: {
+    width: 7,
+    height: 7,
+    borderRadius: 3.5,
+    backgroundColor: 'rgba(255,255,255,0.45)',
+  },
+  galleryDotActive: { backgroundColor: '#fff', width: 18 },
   coverImg: { ...StyleSheet.absoluteFillObject, alignItems: 'flex-end', justifyContent: 'flex-end' },
   coverWatermark: { marginRight: 24, marginBottom: 20 },
   coverScrim: { position: 'absolute', top: 0, left: 0, right: 0, height: 90 },
