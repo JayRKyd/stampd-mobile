@@ -5,7 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { SocialAuthButtons } from '@/components/SocialAuthButtons';
-import { Colors, FontFamily, Palette as J } from '@/constants/theme';
+import { Colors, FontCap, FontFamily, Palette as J } from '@/constants/theme';
 
 export default function WelcomeScreen() {
   const router = useRouter();
@@ -43,18 +43,18 @@ export default function WelcomeScreen() {
       />
 
       <View style={[s.content, { paddingTop: insets.top + 16, paddingBottom: insets.bottom + 20 }]}>
-        <Text style={s.wordmark}>Stampd</Text>
+        <Text {...FontCap} style={s.wordmark}>Stampd</Text>
 
         <View style={{ flex: 1 }} />
 
-        <Text style={s.headline}>
+        <Text {...FontCap} style={s.headline}>
           Full price?{'\n'}
           <Text style={s.headlineGold}>Every visit?</Text>
         </Text>
-        <Text style={s.sub}>
-          We turn your loyalty into free stuff at the local spots you already love.
+        <Text {...FontCap} style={s.sub}>
+          We turn your visits into rewards at the local spots you already love.
         </Text>
-        <Text style={s.sub2}>One PIN. Every shop.</Text>
+        <Text {...FontCap} style={s.sub2}>One PIN. Every shop.</Text>
 
         <View style={s.socialWrap}>
           <SocialAuthButtons
@@ -62,7 +62,7 @@ export default function WelcomeScreen() {
             onSuccess={() => router.replace('/(tabs)')}
             onError={setSocialError}
           />
-          {!!socialError && <Text style={s.socialError}>{socialError}</Text>}
+          {!!socialError && <Text {...FontCap} style={s.socialError}>{socialError}</Text>}
         </View>
 
         <View style={s.btnRow}>
@@ -71,7 +71,7 @@ export default function WelcomeScreen() {
             onPress={() => router.navigate({ pathname: '/(auth)/login', params: { mode: 'signup' } })}
             activeOpacity={0.9}
           >
-            <Text style={s.btnSecondaryText}>Sign up with email</Text>
+            <Text {...FontCap} style={s.btnSecondaryText}>Sign up with email</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -79,14 +79,14 @@ export default function WelcomeScreen() {
             onPress={() => router.navigate({ pathname: '/(auth)/login', params: { mode: 'signin' } })}
             activeOpacity={0.9}
           >
-            <Text style={s.btnSecondaryText}>Sign in</Text>
+            <Text {...FontCap} style={s.btnSecondaryText}>Sign in</Text>
             <View style={s.btnSecondaryArrow}>
               <Ionicons name="arrow-forward" size={14} color="#fff" />
             </View>
           </TouchableOpacity>
         </View>
 
-        <Text style={s.terms}>
+        <Text {...FontCap} style={s.terms}>
           Free for customers · By continuing you agree to our Terms of Service and Privacy Policy
         </Text>
       </View>

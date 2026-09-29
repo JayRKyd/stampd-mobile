@@ -67,6 +67,13 @@ export const FontFamily = {
   extrabold: 'PlusJakartaSans_800ExtraBold',
 };
 
+// Cap iOS/Android system font scaling (Dynamic Type). Users with "Larger
+// Text" accessibility settings still get bigger text, but headlines can't
+// balloon past the layout's breaking point — at full scale the welcome
+// headline filled the screen and pushed the sign-in buttons out of reach.
+// Spread onto Text/TextInput: <Text {...FontCap} ...>
+export const FontCap = { maxFontSizeMultiplier: 1.2 };
+
 export const Spacing = { xs: 4, sm: 8, md: 12, lg: 16, xl: 20, xxl: 24, xxxl: 32, xxxxl: 40 };
 export const Radius = { sm: 10, md: 14, lg: 18, xl: 22, xxl: 28, full: 9999 };
 export const Shadow = {

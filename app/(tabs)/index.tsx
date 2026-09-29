@@ -173,7 +173,7 @@ export default function HomeScreen() {
             }
             steps.push({
               title: 'Discover shops, claim rewards',
-              body: 'Discover lists every place on Stampd, with directions to their door. Rewards is where your free stuff appears.',
+              body: 'Discover lists every place on Stampd, with directions to their door. Rewards is where everything you earn appears.',
               rect: { x: 6, y: tabTop, width: SCREEN_W - 12, height: tabBarHeight - 4 },
             });
             if (steps.length > 0) setTour(steps);
@@ -487,7 +487,7 @@ export default function HomeScreen() {
                   onPress={() => router.navigate('/(tabs)/discover')}
                 >
                   <View style={s.bannerTextWrap}>
-                    <Text style={s.bannerText}>Shop and earn rewards, treats, and free stuff from local spots!</Text>
+                    <Text style={s.bannerText}>Shop and earn rewards and treats from your favorite local spots!</Text>
                   </View>
                   <View style={s.bannerImageWrap}>
                     <Image

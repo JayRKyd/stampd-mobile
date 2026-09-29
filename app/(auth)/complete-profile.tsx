@@ -8,7 +8,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '@/lib/supabase';
 import { nameProfanityError } from '@/lib/profanity';
-import { Colors, FontFamily, Palette as J } from '@/constants/theme';
+import { FontCap, Colors, FontFamily, Palette as J } from '@/constants/theme';
 
 export default function CompleteProfileScreen() {
   const router = useRouter();
@@ -65,13 +65,13 @@ export default function CompleteProfileScreen() {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        <Text style={s.title}>What's your name?</Text>
-        <Text style={s.sub}>
+        <Text {...FontCap} style={s.title}>What's your name?</Text>
+        <Text {...FontCap} style={s.sub}>
           Merchants see this when you show your PIN at the counter. First and last name required.
         </Text>
 
         <View style={s.inputGroup}>
-          <TextInput
+          <TextInput {...FontCap}
             style={s.inputRow}
             value={firstName}
             onChangeText={(t) => { setFirstName(t); setError(''); }}
@@ -82,7 +82,7 @@ export default function CompleteProfileScreen() {
             autoFocus
           />
           <View style={s.inputDivider} />
-          <TextInput
+          <TextInput {...FontCap}
             style={s.inputRow}
             value={lastName}
             onChangeText={(t) => { setLastName(t); setError(''); }}
@@ -96,7 +96,7 @@ export default function CompleteProfileScreen() {
         {error ? (
           <View style={s.errorRow}>
             <Ionicons name="alert-circle" size={14} color={Colors.danger} />
-            <Text style={s.errorText}>{error}</Text>
+            <Text {...FontCap} style={s.errorText}>{error}</Text>
           </View>
         ) : null}
 
@@ -106,7 +106,7 @@ export default function CompleteProfileScreen() {
           disabled={loading}
           activeOpacity={0.85}
         >
-          <Text style={s.primaryBtnText}>{loading ? 'Saving…' : 'Continue'}</Text>
+          <Text {...FontCap} style={s.primaryBtnText}>{loading ? 'Saving…' : 'Continue'}</Text>
         </TouchableOpacity>
       </ScrollView>
     </KeyboardAvoidingView>

@@ -9,7 +9,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '@/lib/supabase';
 import { WEB_URL } from '@/lib/webLinks';
 import { SocialAuthButtons } from '@/components/SocialAuthButtons';
-import { Colors, FontFamily, Palette as J, Shadow } from '@/constants/theme';
+import { FontCap, Colors, FontFamily, Palette as J, Shadow } from '@/constants/theme';
 
 const TERMS_VERSION = '1.0';
 const PRIVACY_VERSION = '1.0';
@@ -145,7 +145,7 @@ export default function LoginScreen() {
       >
         <Ionicons name="chevron-back" size={20} color={J.teal} />
       </TouchableOpacity>
-      <Text style={s.topBarTitle}>{mode === 'signin' ? 'Sign in' : 'Create account'}</Text>
+      <Text {...FontCap} style={s.topBarTitle}>{mode === 'signin' ? 'Sign in' : 'Create account'}</Text>
       <View style={s.topBarSpacer} />
     </View>
   );
@@ -158,28 +158,28 @@ export default function LoginScreen() {
           <View style={s.confirmedIconBox}>
             <Ionicons name="mail-outline" size={30} color={J.teal} />
           </View>
-          <Text style={s.confirmedTitle}>Check your email</Text>
-          <Text style={s.confirmedSub}>
+          <Text {...FontCap} style={s.confirmedTitle}>Check your email</Text>
+          <Text {...FontCap} style={s.confirmedSub}>
             We sent a confirmation link to{'\n'}
-            <Text style={s.confirmedEmail}>{email}</Text>
+            <Text {...FontCap} style={s.confirmedEmail}>{email}</Text>
           </Text>
-          <Text style={s.confirmedHint}>
+          <Text {...FontCap} style={s.confirmedHint}>
             Open the link, then come back and we'll sign you in automatically.
           </Text>
-          {confirmHint ? <Text style={s.confirmedWarn}>{confirmHint}</Text> : null}
+          {confirmHint ? <Text {...FontCap} style={s.confirmedWarn}>{confirmHint}</Text> : null}
           <TouchableOpacity
             style={[s.primaryBtn, loading && s.primaryBtnDisabled]}
             onPress={() => { setConfirmHint(''); attemptConfirmedSignIn(true); }}
             disabled={loading}
             activeOpacity={0.85}
           >
-            <Text style={s.primaryBtnText}>{loading ? 'Signing in…' : "I've confirmed, sign me in"}</Text>
+            <Text {...FontCap} style={s.primaryBtnText}>{loading ? 'Signing in…' : "I've confirmed, sign me in"}</Text>
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => { setPassword(''); setConfirmHint(''); setConfirmed(false); setMode('signin'); }}
             activeOpacity={0.7}
           >
-            <Text style={s.confirmedBackLink}>Back to Sign In</Text>
+            <Text {...FontCap} style={s.confirmedBackLink}>Back to Sign In</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -194,10 +194,10 @@ export default function LoginScreen() {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        <Text style={s.title}>
+        <Text {...FontCap} style={s.title}>
           {mode === 'signin' ? 'Welcome back' : 'Welcome to Stampd'}
         </Text>
-        <Text style={s.sub}>
+        <Text {...FontCap} style={s.sub}>
           {mode === 'signin'
             ? 'Your wallet missed you.'
             : 'A minute from now you\'ll be collecting stamps.'}
@@ -213,14 +213,14 @@ export default function LoginScreen() {
         </View>
         <View style={s.dividerRow}>
           <View style={s.dividerLine} />
-          <Text style={s.dividerText}>or use email</Text>
+          <Text {...FontCap} style={s.dividerText}>or use email</Text>
           <View style={s.dividerLine} />
         </View>
 
         {/* Name group (signup only) */}
         {mode === 'signup' && (
           <View style={s.inputGroup}>
-            <TextInput
+            <TextInput {...FontCap}
               style={s.inputRow}
               value={firstName}
               onChangeText={(t) => { setFirstName(t); setError(''); }}
@@ -230,7 +230,7 @@ export default function LoginScreen() {
               autoCapitalize="words"
             />
             <View style={s.inputDivider} />
-            <TextInput
+            <TextInput {...FontCap}
               style={s.inputRow}
               value={lastName}
               onChangeText={(t) => { setLastName(t); setError(''); }}
@@ -244,7 +244,7 @@ export default function LoginScreen() {
 
         {/* Credentials group */}
         <View style={[s.inputGroup, error ? s.inputGroupError : null]}>
-          <TextInput
+          <TextInput {...FontCap}
             style={s.inputRow}
             value={email}
             onChangeText={(t) => { setEmail(t); setError(''); }}
@@ -256,7 +256,7 @@ export default function LoginScreen() {
           />
           <View style={s.inputDivider} />
           <View style={s.passwordRow}>
-            <TextInput
+            <TextInput {...FontCap}
               style={s.passwordInput}
               value={password}
               onChangeText={(t) => { setPassword(t); setError(''); }}
@@ -290,7 +290,7 @@ export default function LoginScreen() {
             onPress={() => router.navigate({ pathname: '/(auth)/forgot-password', params: email ? { email } : undefined })}
             activeOpacity={0.7}
           >
-            <Text style={s.forgotLinkText}>Forgot password?</Text>
+            <Text {...FontCap} style={s.forgotLinkText}>Forgot password?</Text>
           </TouchableOpacity>
         )}
 
@@ -307,15 +307,15 @@ export default function LoginScreen() {
               {legalAccepted && <Ionicons name="checkmark" size={15} color="#fff" />}
             </TouchableOpacity>
             <View style={s.legalCopy}>
-              <Text style={s.legalText}>I agree to the </Text>
+              <Text {...FontCap} style={s.legalText}>I agree to the </Text>
               <TouchableOpacity onPress={() => openLegalDocument('Terms of Service', TERMS_URL)}>
-                <Text style={s.legalLink}>Terms of Service</Text>
+                <Text {...FontCap} style={s.legalLink}>Terms of Service</Text>
               </TouchableOpacity>
-              <Text style={s.legalText}> and acknowledge the </Text>
+              <Text {...FontCap} style={s.legalText}> and acknowledge the </Text>
               <TouchableOpacity onPress={() => openLegalDocument('Privacy Policy', PRIVACY_URL)}>
-                <Text style={s.legalLink}>Privacy Policy</Text>
+                <Text {...FontCap} style={s.legalLink}>Privacy Policy</Text>
               </TouchableOpacity>
-              <Text style={s.legalText}>.</Text>
+              <Text {...FontCap} style={s.legalText}>.</Text>
             </View>
           </View>
         )}
@@ -323,7 +323,7 @@ export default function LoginScreen() {
         {error ? (
           <View style={s.errorRow}>
             <Ionicons name="alert-circle" size={14} color={Colors.danger} />
-            <Text style={s.errorText}>{error}</Text>
+            <Text {...FontCap} style={s.errorText}>{error}</Text>
           </View>
         ) : null}
 
@@ -333,7 +333,7 @@ export default function LoginScreen() {
           disabled={loading || (mode === 'signup' && !legalAccepted)}
           activeOpacity={0.85}
         >
-          <Text style={s.primaryBtnText}>
+          <Text {...FontCap} style={s.primaryBtnText}>
             {loading ? 'Please wait…' : 'Continue'}
           </Text>
         </TouchableOpacity>
@@ -341,7 +341,7 @@ export default function LoginScreen() {
         {/* or divider */}
         <View style={s.orRow}>
           <View style={s.orLine} />
-          <Text style={s.orText}>or</Text>
+          <Text {...FontCap} style={s.orText}>or</Text>
           <View style={s.orLine} />
         </View>
 
@@ -353,7 +353,7 @@ export default function LoginScreen() {
             color={J.ink}
             style={s.optionIcon}
           />
-          <Text style={s.optionText}>
+          <Text {...FontCap} style={s.optionText}>
             {mode === 'signin' ? 'Create an account' : 'Sign in instead'}
           </Text>
         </TouchableOpacity>

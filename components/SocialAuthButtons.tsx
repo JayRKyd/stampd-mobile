@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Platform, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { signInWithApple, signInWithGoogle } from '@/lib/socialAuth';
-import { FontFamily, Palette as J } from '@/constants/theme';
+import { FontCap, FontFamily, Palette as J } from '@/constants/theme';
 
 interface Props {
   /** 'dark' sits on the welcome photo; 'light' sits on the cream login card */
@@ -38,7 +38,7 @@ export function SocialAuthButtons({ tone, onSuccess, onError }: Props) {
           ) : (
             <>
               <Ionicons name="logo-apple" size={20} color={dark ? J.ink : '#fff'} />
-              <Text style={[s.btnText, { color: dark ? J.ink : '#fff' }]}>Continue with Apple</Text>
+              <Text {...FontCap} style={[s.btnText, { color: dark ? J.ink : '#fff' }]}>Continue with Apple</Text>
             </>
           )}
         </TouchableOpacity>
@@ -56,7 +56,7 @@ export function SocialAuthButtons({ tone, onSuccess, onError }: Props) {
           <>
             {/* Official Google G (branding kit), transparent background */}
             <Image source={require('@/assets/google-g.png')} style={s.googleIcon} />
-            <Text style={[s.btnText, { color: J.ink }]}>Continue with Google</Text>
+            <Text {...FontCap} style={[s.btnText, { color: J.ink }]}>Continue with Google</Text>
           </>
         )}
       </TouchableOpacity>

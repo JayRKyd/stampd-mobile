@@ -4,7 +4,7 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '@/lib/supabase';
-import { Colors, FontFamily, Palette as J, Shadow } from '@/constants/theme';
+import { FontCap, Colors, FontFamily, Palette as J, Shadow } from '@/constants/theme';
 
 export default function VerifyScreen() {
   const router = useRouter();
@@ -43,7 +43,7 @@ export default function VerifyScreen() {
 
   return (
     <KeyboardAvoidingView style={s.root} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-      <TextInput ref={inputRef} style={s.hidden} value={code} onChangeText={onChange} keyboardType="number-pad" maxLength={6} autoFocus />
+      <TextInput {...FontCap} ref={inputRef} style={s.hidden} value={code} onChangeText={onChange} keyboardType="number-pad" maxLength={6} autoFocus />
 
       <View style={[s.topBar, { paddingTop: insets.top + 10 }]}>
         <TouchableOpacity
@@ -54,22 +54,22 @@ export default function VerifyScreen() {
         >
           <Ionicons name="chevron-back" size={20} color={J.teal} />
         </TouchableOpacity>
-        <Text style={s.topBarTitle}>Verify</Text>
+        <Text {...FontCap} style={s.topBarTitle}>Verify</Text>
         <View style={s.topBarSpacer} />
       </View>
 
       <View style={s.content}>
-        <Text style={s.title}>Check your messages</Text>
-        <Text style={s.sub}>
+        <Text {...FontCap} style={s.title}>Check your messages</Text>
+        <Text {...FontCap} style={s.sub}>
           We sent a 6-digit code to{'\n'}
-          <Text style={s.phoneHL}>{phone}</Text>
+          <Text {...FontCap} style={s.phoneHL}>{phone}</Text>
         </Text>
 
         <TouchableOpacity activeOpacity={1} onPress={() => inputRef.current?.focus()}>
           <View style={s.cellRow}>
             {cells.map((d, i) => (
               <View key={i} style={[s.cell, d ? s.cellFilled : null, code.length === i && s.cellActive, error ? s.cellError : null]}>
-                <Text style={s.cellText}>{d}</Text>
+                <Text {...FontCap} style={s.cellText}>{d}</Text>
               </View>
             ))}
           </View>
@@ -78,16 +78,16 @@ export default function VerifyScreen() {
         {error ? (
           <View style={s.errorRow}>
             <Ionicons name="alert-circle" size={14} color={Colors.danger} />
-            <Text style={s.errorText}>{error}</Text>
+            <Text {...FontCap} style={s.errorText}>{error}</Text>
           </View>
         ) : null}
 
         <View style={s.resendRow}>
-          <Text style={s.resendLabel}>Didn't get the code? </Text>
+          <Text {...FontCap} style={s.resendLabel}>Didn't get the code? </Text>
           {timer > 0
-            ? <Text style={s.resendTimer}>Resend in {timer}s</Text>
+            ? <Text {...FontCap} style={s.resendTimer}>Resend in {timer}s</Text>
             : <TouchableOpacity onPress={() => { supabase.auth.signInWithOtp({ phone }); setTimer(30); setCode(''); }}>
-                <Text style={s.resendBtn}>Resend</Text>
+                <Text {...FontCap} style={s.resendBtn}>Resend</Text>
               </TouchableOpacity>
           }
         </View>
@@ -98,7 +98,7 @@ export default function VerifyScreen() {
           disabled={code.length < 6 || loading}
           activeOpacity={0.85}
         >
-          <Text style={s.primaryBtnText}>{loading ? 'Verifying…' : 'Verify'}</Text>
+          <Text {...FontCap} style={s.primaryBtnText}>{loading ? 'Verifying…' : 'Verify'}</Text>
         </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>

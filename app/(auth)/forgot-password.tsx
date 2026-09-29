@@ -8,7 +8,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '@/lib/supabase';
 import { WEB_URL } from '@/lib/webLinks';
-import { Colors, FontFamily, Palette as J, Shadow } from '@/constants/theme';
+import { FontCap, Colors, FontFamily, Palette as J, Shadow } from '@/constants/theme';
 
 export default function ForgotPasswordScreen() {
   const router = useRouter();
@@ -48,7 +48,7 @@ export default function ForgotPasswordScreen() {
         >
           <Ionicons name="chevron-back" size={20} color={J.teal} />
         </TouchableOpacity>
-        <Text style={s.topBarTitle}>Reset password</Text>
+        <Text {...FontCap} style={s.topBarTitle}>Reset password</Text>
         <View style={s.topBarSpacer} />
       </View>
 
@@ -57,12 +57,12 @@ export default function ForgotPasswordScreen() {
           <View style={s.sentIconBox}>
             <Ionicons name="mail-outline" size={30} color={J.teal} />
           </View>
-          <Text style={s.sentTitle}>Check your email</Text>
-          <Text style={s.sentSub}>
+          <Text {...FontCap} style={s.sentTitle}>Check your email</Text>
+          <Text {...FontCap} style={s.sentSub}>
             We sent a password reset link to{'\n'}
-            <Text style={s.sentEmail}>{email.trim()}</Text>
+            <Text {...FontCap} style={s.sentEmail}>{email.trim()}</Text>
           </Text>
-          <Text style={s.sentHint}>
+          <Text {...FontCap} style={s.sentHint}>
             Open the link to set a new password, then come back and sign in.
           </Text>
           <TouchableOpacity
@@ -70,18 +70,18 @@ export default function ForgotPasswordScreen() {
             onPress={() => router.back()}
             activeOpacity={0.85}
           >
-            <Text style={s.primaryBtnText}>Back to Sign In</Text>
+            <Text {...FontCap} style={s.primaryBtnText}>Back to Sign In</Text>
           </TouchableOpacity>
         </View>
       ) : (
         <View style={s.content}>
-          <Text style={s.title}>Forgot your password?</Text>
-          <Text style={s.sub}>
+          <Text {...FontCap} style={s.title}>Forgot your password?</Text>
+          <Text {...FontCap} style={s.sub}>
             No stress. Enter your email and we'll send you a link to set a new one.
           </Text>
 
           <View style={[s.inputGroup, error ? s.inputGroupError : null]}>
-            <TextInput
+            <TextInput {...FontCap}
               style={s.inputRow}
               value={email}
               onChangeText={(t) => { setEmail(t); setError(''); }}
@@ -97,7 +97,7 @@ export default function ForgotPasswordScreen() {
           {error ? (
             <View style={s.errorRow}>
               <Ionicons name="alert-circle" size={14} color={Colors.danger} />
-              <Text style={s.errorText}>{error}</Text>
+              <Text {...FontCap} style={s.errorText}>{error}</Text>
             </View>
           ) : null}
 
@@ -107,7 +107,7 @@ export default function ForgotPasswordScreen() {
             disabled={loading}
             activeOpacity={0.85}
           >
-            <Text style={s.primaryBtnText}>{loading ? 'Sending…' : 'Send Reset Link'}</Text>
+            <Text {...FontCap} style={s.primaryBtnText}>{loading ? 'Sending…' : 'Send Reset Link'}</Text>
           </TouchableOpacity>
         </View>
       )}

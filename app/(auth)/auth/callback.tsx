@@ -1,12 +1,12 @@
 import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
-import { Palette as J, FontFamily } from '@/constants/theme';
+import { FontCap, Palette as J, FontFamily } from '@/constants/theme';
 
 export default function AuthCallbackScreen() {
   return (
     <View style={s.root}>
       <ActivityIndicator size="large" color={J.teal} />
-      <Text style={s.title}>Verifying your email</Text>
-      <Text style={s.subtitle}>This will only take a moment.</Text>
+      <Text {...FontCap} style={s.title}>Verifying your email</Text>
+      <Text {...FontCap} style={s.subtitle}>This will only take a moment.</Text>
     </View>
   );
 }

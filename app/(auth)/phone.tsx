@@ -4,7 +4,7 @@ import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '@/lib/supabase';
-import { Colors, FontFamily, Palette as J, Shadow } from '@/constants/theme';
+import { FontCap, Colors, FontFamily, Palette as J, Shadow } from '@/constants/theme';
 
 function formatPhone(raw: string) {
   const d = raw.replace(/\D/g, '');
@@ -42,20 +42,20 @@ export default function PhoneScreen() {
         >
           <Ionicons name="chevron-back" size={20} color={J.teal} />
         </TouchableOpacity>
-        <Text style={s.topBarTitle}>Your number</Text>
+        <Text {...FontCap} style={s.topBarTitle}>Your number</Text>
         <View style={s.topBarSpacer} />
       </View>
 
       <ScrollView contentContainerStyle={s.scroll} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
-        <Text style={s.title}>What's your number?</Text>
-        <Text style={s.sub}>We'll text you a verification code. No spam, ever.</Text>
+        <Text {...FontCap} style={s.title}>What's your number?</Text>
+        <Text {...FontCap} style={s.sub}>We'll text you a verification code. No spam, ever.</Text>
 
         <View style={[s.inputGroup, error ? s.inputGroupError : null]}>
           <View style={s.dialBox}>
-            <Text style={s.dialCode}>+1</Text>
+            <Text {...FontCap} style={s.dialCode}>+1</Text>
           </View>
           <View style={s.inputDivider} />
-          <TextInput
+          <TextInput {...FontCap}
             style={s.input}
             value={phone}
             onChangeText={(t) => { setPhone(formatPhone(t)); setError(''); }}
@@ -70,11 +70,11 @@ export default function PhoneScreen() {
         {error ? (
           <View style={s.errorRow}>
             <Ionicons name="alert-circle" size={14} color={Colors.danger} />
-            <Text style={s.errorText}>{error}</Text>
+            <Text {...FontCap} style={s.errorText}>{error}</Text>
           </View>
         ) : null}
 
-        <Text style={s.hint}>
+        <Text {...FontCap} style={s.hint}>
           Your number is your Stampd identity. Merchants can also stamp you by number if you prefer not to share your PIN.
         </Text>
 
@@ -84,7 +84,7 @@ export default function PhoneScreen() {
           disabled={loading}
           activeOpacity={0.85}
         >
-          <Text style={s.primaryBtnText}>{loading ? 'Sending…' : 'Send Code'}</Text>
+          <Text {...FontCap} style={s.primaryBtnText}>{loading ? 'Sending…' : 'Send Code'}</Text>
         </TouchableOpacity>
       </ScrollView>
     </KeyboardAvoidingView>
