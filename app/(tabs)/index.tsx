@@ -26,12 +26,16 @@ import { Colors, FontFamily, Palette, Radius, Shadow } from '@/constants/theme';
 import { StampCard } from '@/components/StampCard';
 import { PinCard } from '@/components/PinCard';
 import { CoachMarks, CoachStep } from '@/components/CoachMarks';
+import { SpecialTile } from '@/components/SpecialTile';
 import { consumeTourRequest, markTourDone } from '@/lib/tour';
+import { useSpecialsToday, tagLabel } from '@/lib/specials';
 
 const SCREEN_W = Dimensions.get('window').width;
 const SCREEN_H = Dimensions.get('window').height;
 const HERO_W = SCREEN_W - 40;
 const HERO_GAP = 12;
+const TILE_GAP = 12;
+const TILE_W = Math.floor((SCREEN_W - 40 - TILE_GAP) / 2);
 
 const J = Palette;
 
@@ -59,7 +63,10 @@ export default function HomeScreen() {
   const [toastVisible, setToastVisible] = useState(false);
   const [toastMsg, setToastMsg] = useState('');
   const [heroIndex, setHeroIndex] = useState(0);
-  const [view, setView] = useState<'shops' | 'cards'>('shops');
+  const [view, setView] = useState<'shops' | 'cards' | 'today'>('shops');
+  // Posts running today from shops this customer holds a card with
+  const { mine: mySpecials } = useSpecialsToday();
+  const specialSlides = mySpecials.slice(0, 2);
   const heroScrollRef = useRef<ScrollView>(null);
   const heroIndexRef = useRef(0);
   // Auto-advance holds off until this timestamp; touching the carousel
@@ -268,7 +275,7 @@ export default function HomeScreen() {
   const completedSteps = steps.filter(st => st.done).length;
   const pendingSteps = steps.filter(st => !st.done);
   const stepPct = Math.max(6, Math.round((completedSteps / steps.length) * 100));
-  const heroCount = heroCards.length + pendingSteps.length;
+  const heroCount = specialSlides.length + heroCards.length + pendingSteps.length;
 
   const onHeroScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
     const idx = Math.round(e.nativeEvent.contentOffset.x / (HERO_W + HERO_GAP));
@@ -342,7 +349,7 @@ export default function HomeScreen() {
               onPress={() => {
                 if (pendingSteps.length > 0) {
                   pauseHeroAutoplay();
-                  heroScrollRef.current?.scrollTo({ x: heroCards.length * (HERO_W + HERO_GAP), animated: true });
+                  heroScrollRef.current?.scrollTo({ x: (specialSlides.length + heroCards.length) * (HERO_W + HERO_GAP), animated: true });
                 } else {
                   router.navigate('/my-cards');
                 }
@@ -371,6 +378,38 @@ export default function HomeScreen() {
             style={s.heroScroll}
             contentContainerStyle={s.heroScrollContent}
           >
+            {/* A post from one of your shops goes first: same slide, gold tag */}
+            {specialSlides.map((sp) => (
+              <TouchableOpacity
+                key={`special-${sp.id}`}
+                activeOpacity={0.9}
+                onPress={() => router.push(`/special/${sp.id}`)}
+                style={[s.heroCard, { width: HERO_W }]}
+              >
+                <View style={s.heroLeft}>
+                  <View style={s.specialTag}><Text style={s.specialTagText}>{tagLabel(sp)}</Text></View>
+                  <Text style={s.heroOverline} numberOfLines={1}>{sp.business_name}</Text>
+                  <View style={s.heroTitleRow}>
+                    <Text style={s.heroTitle} numberOfLines={2}>{sp.text}</Text>
+                    <Ionicons name="chevron-forward" size={15} color="#fff" />
+                  </View>
+                  {sp.earns_stamp && <Text style={s.specialEarns}>Earns a stamp</Text>}
+                </View>
+                <View style={s.heroTileWrap}>
+                  <View style={s.heroTile}>
+                    {sp.logo_url ? (
+                      <Image source={{ uri: sp.logo_url }} style={s.heroTileImg} contentFit="contain" transition={150} cachePolicy="memory-disk" />
+                    ) : (
+                      <Text style={s.heroTileInitials}>
+                        {sp.business_name.split(' ').slice(0, 2).map(w => w[0]?.toUpperCase() ?? '').join('')}
+                      </Text>
+                    )}
+                  </View>
+                  <Ionicons name="megaphone" size={15} color={J.creamBar} style={s.heroSparkle} />
+                </View>
+              </TouchableOpacity>
+            ))}
+
             {heroCards.map((m) => {
                 const required = m.loyalty_cards?.stamp_count_required ?? 10;
                 const collected = Math.min(m.current_stamps, required);
@@ -470,6 +509,18 @@ export default function HomeScreen() {
             >
               <Text style={[s.toggleText, view === 'cards' && s.toggleTextActive]}>Cards</Text>
             </TouchableOpacity>
+            <TouchableOpacity
+              style={[s.togglePill, view === 'today' && s.togglePillActive]}
+              onPress={() => setView('today')}
+              activeOpacity={0.8}
+            >
+              <Text style={[s.toggleText, view === 'today' && s.toggleTextActive]}>Today</Text>
+              {mySpecials.length > 0 && (
+                <View style={s.todayBadge}>
+                  <Text style={s.todayBadgeText}>{mySpecials.length}</Text>
+                </View>
+              )}
+            </TouchableOpacity>
           </View>
 
           <ScrollView
@@ -537,6 +588,48 @@ export default function HomeScreen() {
                   <Text style={s.historyLinkText}>History</Text>
                 </TouchableOpacity>
               </View>
+            </>
+          ) : view === 'today' ? (
+            <>
+              {mySpecials.length === 0 ? (
+                <View style={s.emptyCards}>
+                  <View style={s.emptyIconBox}>
+                    <Ionicons name="megaphone-outline" size={28} color={J.teal} />
+                  </View>
+                  <Text style={s.emptyTitle}>Nothing from your spots yet</Text>
+                  <Text style={s.emptyBody}>
+                    None of the shops you hold a card with have posted today.
+                  </Text>
+                  <TouchableOpacity
+                    style={s.emptyButton}
+                    onPress={() => router.push('/today')}
+                    activeOpacity={0.8}
+                  >
+                    <Text style={s.emptyButtonText}>See what's going on today</Text>
+                    <Ionicons name="arrow-forward" size={15} color="#fff" />
+                  </TouchableOpacity>
+                </View>
+              ) : (
+                <View>
+                  <View style={s.cardsHeadRow}>
+                    <Text style={s.cardsHeadLabel}>YOUR SPOTS TODAY</Text>
+                    <TouchableOpacity
+                      onPress={() => router.push('/today')}
+                      activeOpacity={0.7}
+                      style={s.walletLink}
+                      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                    >
+                      <Text style={s.walletLinkText}>See all</Text>
+                      <Ionicons name="chevron-forward" size={13} color={J.teal} />
+                    </TouchableOpacity>
+                  </View>
+                  <View style={s.tileGrid}>
+                    {mySpecials.map(sp => (
+                      <SpecialTile key={sp.id} special={sp} width={TILE_W} onPress={() => router.push(`/special/${sp.id}`)} />
+                    ))}
+                  </View>
+                </View>
+              )}
             </>
           ) : (
             <>
@@ -742,12 +835,38 @@ const s = StyleSheet.create({
     height: 34,
     borderRadius: 17,
     paddingHorizontal: 18,
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
   },
   togglePillActive: { backgroundColor: J.teal },
   toggleText: { fontSize: 13, fontFamily: FontFamily.semibold, color: J.ink },
   toggleTextActive: { color: '#fff', fontFamily: FontFamily.bold },
+  todayBadge: {
+    marginLeft: 6,
+    minWidth: 18,
+    height: 18,
+    paddingHorizontal: 5,
+    borderRadius: 9,
+    backgroundColor: Colors.gold,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  todayBadgeText: { fontSize: 10, fontFamily: FontFamily.extrabold, color: '#0C2E29' },
+  tileGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: TILE_GAP, marginTop: 12 },
+
+  specialTag: {
+    alignSelf: 'flex-start',
+    height: 18,
+    paddingHorizontal: 7,
+    borderRadius: 9,
+    backgroundColor: Colors.gold,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 6,
+  },
+  specialTagText: { fontSize: 9, fontFamily: FontFamily.extrabold, color: '#0C2E29', letterSpacing: 0.6 },
+  specialEarns: { fontSize: 11, fontFamily: FontFamily.semibold, color: 'rgba(255,255,255,0.8)', marginTop: 8 },
 
   bannerShadow: {
     borderRadius: 16,

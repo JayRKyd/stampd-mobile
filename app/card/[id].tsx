@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
-  Modal, Dimensions, ActivityIndicator,
+  Modal, Dimensions, ActivityIndicator, Switch,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -13,6 +13,8 @@ import { Colors, FontFamily, Palette as J, Radius, Spacing, Shadow } from '@/con
 import { getStampIcon } from '@/lib/stampIcons';
 import { cardGradient, heroGradient } from '@/lib/cardColor';
 import { StampCard } from '@/components/StampCard';
+import { TodayAt } from '@/components/TodayAt';
+import { useSpecialsToday, specialForMerchant } from '@/lib/specials';
 
 const { width } = Dimensions.get('window');
 
@@ -30,6 +32,7 @@ type Membership = {
   total_rewards_earned: number;
   last_stamp_at: string | null;
   created_at: string;
+  specials_muted?: boolean | null;
   merchants: { id: string; business_name: string; category: string; logo_url: string | null };
   loyalty_cards: {
     id: string;
@@ -119,7 +122,7 @@ export default function CardDetailScreen() {
 
       const { data: m, error: mErr } = await supabase
         .from('memberships')
-        .select(`id, current_stamps, total_stamps_earned, total_rewards_earned, last_stamp_at, created_at,
+        .select(`id, current_stamps, total_stamps_earned, total_rewards_earned, last_stamp_at, created_at, specials_muted,
           merchants (id, business_name, category, logo_url),
           loyalty_cards (id, reward_description, stamp_count_required, reward_title, stamp_icon, card_color, visit_label)`)
         .eq('id', id)
@@ -158,6 +161,18 @@ export default function CardDetailScreen() {
   });
 
   const membership = data?.membership ?? null;
+
+  // Today's post from this shop, and the per-shop mute for its pushes
+  const { specials: todaySpecials } = useSpecialsToday();
+  const todaySpecial = specialForMerchant(todaySpecials, membership?.merchants?.id);
+  const [muted, setMuted] = useState<boolean | null>(null);
+  const isMuted = muted ?? !!membership?.specials_muted;
+  async function toggleMuted(next: boolean) {
+    if (!membership) return;
+    setMuted(next);
+    const { data: res } = await supabase.rpc('set_specials_muted', { p_merchant_id: membership.merchants.id, p_muted: next });
+    if (!(res as any)?.ok) setMuted(!next);
+  }
   const events = data?.events ?? [];
   const pendingReward = data?.pendingReward ?? null;
 
@@ -294,6 +309,12 @@ export default function CardDetailScreen() {
       <View style={s.sheet}>
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={[s.sheetScroll, { paddingBottom: insets.bottom + 32 }]}>
 
+          {todaySpecial && (
+            <View style={{ marginBottom: 16 }}>
+              <TodayAt special={todaySpecial} />
+            </View>
+          )}
+
           {/* Stats */}
           <View style={s.statsRow}>
             <View style={s.statCol}>
@@ -342,6 +363,20 @@ export default function CardDetailScreen() {
               })}
             </View>
           ))}
+
+          {/* Mute this shop's posts without leaving the app */}
+          <View style={s.muteRow}>
+            <View style={{ flex: 1, minWidth: 0 }}>
+              <Text style={s.muteTitle}>Posts from this shop</Text>
+              <Text style={s.muteSub}>Specials and updates, at most one a day. Other shops aren't affected.</Text>
+            </View>
+            <Switch
+              value={!isMuted}
+              onValueChange={(on) => toggleMuted(!on)}
+              trackColor={{ false: 'rgba(26,43,42,0.18)', true: J.teal }}
+              thumbColor="#fff"
+            />
+          </View>
         </ScrollView>
       </View>
 
@@ -454,6 +489,20 @@ const s = StyleSheet.create({
   successText: { fontSize: 13, fontFamily: FontFamily.semibold, color: Colors.success },
 
   // History groups
+  muteRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
+    backgroundColor: '#fff',
+    borderRadius: 18,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: J.lineSoft,
+    marginTop: 4,
+  },
+  muteTitle: { fontSize: 14, fontFamily: FontFamily.bold, color: J.ink },
+  muteSub: { fontSize: 12, fontFamily: FontFamily.regular, color: J.inkSoft, marginTop: 2, lineHeight: 17 },
+
   group: { marginBottom: 28 },
   groupLabel: {
     fontSize: 13, fontFamily: FontFamily.semibold,

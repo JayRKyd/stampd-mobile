@@ -15,7 +15,7 @@ import { StatusBar } from 'expo-status-bar';
 import { Linking, View, StyleSheet } from 'react-native';
 import { supabase } from '@/lib/supabase';
 import { createSessionFromAuthUrl, isAuthCallbackUrl } from '@/lib/authDeepLink';
-import { registerPushToken } from '@/lib/pushNotifications';
+import { registerPushToken, onSpecialPushTapped } from '@/lib/pushNotifications';
 import { profileNamesComplete } from '@/lib/ensureProfile';
 import { clearDataCache } from '@/lib/dataCache';
 import { LiveNotifications } from '@/components/LiveNotifications';
@@ -74,6 +74,9 @@ function RootLayout() {
     });
     return () => subscription.remove();
   }, [router]);
+
+  // Tapping a special's push opens that post, including when it launched the app
+  useEffect(() => onSpecialPushTapped((id) => router.push(`/special/${id}`)), [router]);
 
   const refreshProfile = useCallback(async (userId: string) => {
     const ready = await profileNamesComplete(userId);
@@ -170,7 +173,13 @@ function RootLayout() {
           animation: 'slide_from_right',
           contentStyle: { backgroundColor: Palette.cream },
         }}
-      />
+      >
+        {/* A post opens over whatever you were on and closes with the X or a swipe down */}
+        <Stack.Screen
+          name="special/[id]"
+          options={{ presentation: 'modal', animation: 'slide_from_bottom', contentStyle: { backgroundColor: '#06251F' } }}
+        />
+      </Stack>
       {/* Live in-app toast for stamps/rewards, over every screen while signed in */}
       <LiveNotifications userId={session?.user?.id} />
       {!navSettled && (

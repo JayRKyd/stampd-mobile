@@ -6,6 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '@/lib/supabase';
 import { useCachedData } from '@/lib/dataCache';
+import { useSpecialsToday } from '@/lib/specials';
 import { cardGradient, shadeColor } from '@/lib/cardColor';
 import { visitLabelWord } from '@/lib/visitLabel';
 import { Colors, FontFamily, Palette as J, Spacing, Shadow } from '@/constants/theme';
@@ -64,6 +65,8 @@ export default function DiscoverScreen() {
 
   const merchants = dirData?.merchants ?? [];
   const joinedIds = dirData?.joinedIds ?? [];
+  const { specials } = useSpecialsToday();
+  const specialMerchantIds = new Set(specials.map(sp => sp.merchant_id));
 
   const filtered = useMemo(() => {
     let results = merchants;
@@ -234,6 +237,8 @@ export default function DiscoverScreen() {
                         <Ionicons name="checkmark" size={9} color="#fff" />
                       </View>
                     )}
+                    {/* Something's on at this shop today */}
+                    {specialMerchantIds.has(m.id) && <View style={s.todayDot} />}
                   </View>
 
                   {/* Info */}
@@ -374,6 +379,12 @@ const s = StyleSheet.create({
     width: 20, height: 20, borderRadius: 10,
     backgroundColor: Colors.success,
     alignItems: 'center', justifyContent: 'center',
+    borderWidth: 2, borderColor: '#fff',
+  },
+  todayDot: {
+    position: 'absolute', top: -3, right: -3,
+    width: 12, height: 12, borderRadius: 6,
+    backgroundColor: Colors.gold,
     borderWidth: 2, borderColor: '#fff',
   },
 

@@ -10,6 +10,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '@/lib/supabase';
 import { useCachedData } from '@/lib/dataCache';
+import { useSpecialsToday, specialForMerchant } from '@/lib/specials';
+import { TodayAt } from '@/components/TodayAt';
 import { Colors, FontFamily, Palette as J, Spacing, Shadow } from '@/constants/theme';
 import { cardGradient, shadeColor } from '@/lib/cardColor';
 import { visitLabelWord } from '@/lib/visitLabel';
@@ -140,6 +142,8 @@ export default function MerchantDetailScreen() {
   const unavailableReason = data?.unavailable ?? null;
   const card = data?.card ?? null;
   const membership = data?.membership ?? null;
+  const { specials: todaySpecials } = useSpecialsToday();
+  const todaySpecial = specialForMerchant(todaySpecials, id);
 
   if (!data) {
     return (
@@ -339,6 +343,13 @@ export default function MerchantDetailScreen() {
                   <Text style={s.directionsBtnText}>Directions</Text>
                 </TouchableOpacity>
               ) : null}
+            </View>
+          )}
+
+          {/* Today's post from this shop, when there is one */}
+          {todaySpecial && (
+            <View style={{ marginTop: 16 }}>
+              <TodayAt special={todaySpecial} />
             </View>
           )}
 

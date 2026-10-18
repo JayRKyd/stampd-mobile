@@ -18,6 +18,20 @@ Notifications.setNotificationHandler({
   }),
 });
 
+/**
+ * Call `open(specialId)` when the user taps a special's push, including the
+ * one that launched the app from cold. Returns an unsubscribe.
+ */
+export function onSpecialPushTapped(open: (specialId: string) => void): () => void {
+  const handle = (response: Notifications.NotificationResponse | null) => {
+    const data = response?.notification?.request?.content?.data as Record<string, unknown> | undefined;
+    if (data?.kind === 'special' && typeof data.special_id === 'string') open(data.special_id);
+  };
+  Notifications.getLastNotificationResponseAsync().then(handle).catch(() => {});
+  const sub = Notifications.addNotificationResponseReceivedListener(handle);
+  return () => sub.remove();
+}
+
 /** Register this device for merchant nudges and reward alerts. Safe to call on every login. */
 export async function registerPushToken(): Promise<void> {
   if (!Device.isDevice) return;
