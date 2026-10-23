@@ -158,6 +158,20 @@ export default function DiscoverScreen() {
           })}
         </ScrollView>
 
+        {/* What's on today, one line, straight to the island view */}
+        {specials.length > 0 && (
+          <TouchableOpacity style={s.todayStrip} onPress={() => router.push('/today')} activeOpacity={0.85}>
+            <View style={s.todayStripIcon}>
+              <Ionicons name="megaphone" size={14} color="#fff" />
+            </View>
+            <Text style={s.todayStripText}>
+              <Text style={s.todayStripCount}>{specials.length}</Text> {specials.length === 1 ? 'post' : 'posts'} on today
+            </Text>
+            <Text style={s.todayStripLink}>See what's on</Text>
+            <Ionicons name="chevron-forward" size={14} color={J.teal} />
+          </TouchableOpacity>
+        )}
+
         {/* Results count */}
         {!loading && (
           <Text style={s.resultsLabel}>
@@ -381,6 +395,26 @@ const s = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center',
     borderWidth: 2, borderColor: '#fff',
   },
+  todayStrip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    backgroundColor: '#fff',
+    borderRadius: 14,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(0,96,90,0.25)',
+  },
+  todayStripIcon: {
+    width: 28, height: 28, borderRadius: 8,
+    backgroundColor: J.teal,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  todayStripText: { flex: 1, fontSize: 13, fontFamily: FontFamily.semibold, color: J.ink },
+  todayStripCount: { fontFamily: FontFamily.extrabold, color: J.teal },
+  todayStripLink: { fontSize: 12, fontFamily: FontFamily.bold, color: J.teal },
   todayDot: {
     position: 'absolute', top: -3, right: -3,
     width: 12, height: 12, borderRadius: 6,

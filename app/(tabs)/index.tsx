@@ -64,8 +64,8 @@ export default function HomeScreen() {
   const [toastMsg, setToastMsg] = useState('');
   const [heroIndex, setHeroIndex] = useState(0);
   const [view, setView] = useState<'shops' | 'cards' | 'today'>('shops');
-  // Posts running today from shops this customer holds a card with
-  const { mine: mySpecials } = useSpecialsToday();
+  // Everything running today; your own shops lead the carousel and the Today view
+  const { specials: allSpecials, mine: mySpecials, others: otherSpecials } = useSpecialsToday();
   const specialSlides = mySpecials.slice(0, 2);
   const heroScrollRef = useRef<ScrollView>(null);
   const heroIndexRef = useRef(0);
@@ -515,9 +515,9 @@ export default function HomeScreen() {
               activeOpacity={0.8}
             >
               <Text style={[s.toggleText, view === 'today' && s.toggleTextActive]}>Today</Text>
-              {mySpecials.length > 0 && (
+              {allSpecials.length > 0 && (
                 <View style={s.todayBadge}>
-                  <Text style={s.todayBadgeText}>{mySpecials.length}</Text>
+                  <Text style={s.todayBadgeText}>{allSpecials.length}</Text>
                 </View>
               )}
             </TouchableOpacity>
@@ -591,28 +591,29 @@ export default function HomeScreen() {
             </>
           ) : view === 'today' ? (
             <>
-              {mySpecials.length === 0 ? (
+              {allSpecials.length === 0 ? (
                 <View style={s.emptyCards}>
                   <View style={s.emptyIconBox}>
                     <Ionicons name="megaphone-outline" size={28} color={J.teal} />
                   </View>
-                  <Text style={s.emptyTitle}>Nothing from your spots yet</Text>
+                  <Text style={s.emptyTitle}>Nothing on yet today</Text>
                   <Text style={s.emptyBody}>
-                    None of the shops you hold a card with have posted today.
+                    Shops usually post before lunch. Check back, or browse every shop on Stampd.
                   </Text>
                   <TouchableOpacity
                     style={s.emptyButton}
-                    onPress={() => router.push('/today')}
+                    onPress={() => router.navigate('/(tabs)/discover')}
                     activeOpacity={0.8}
                   >
-                    <Text style={s.emptyButtonText}>See what's going on today</Text>
+                    <Text style={s.emptyButtonText}>Browse shops</Text>
                     <Ionicons name="arrow-forward" size={15} color="#fff" />
                   </TouchableOpacity>
                 </View>
               ) : (
                 <View>
+                  {/* Your shops first, then everyone else, so the view is never personal-but-empty */}
                   <View style={s.cardsHeadRow}>
-                    <Text style={s.cardsHeadLabel}>YOUR SPOTS TODAY</Text>
+                    <Text style={s.cardsHeadLabel}>{mySpecials.length > 0 ? 'YOUR SPOTS TODAY' : 'ON TODAY'}</Text>
                     <TouchableOpacity
                       onPress={() => router.push('/today')}
                       activeOpacity={0.7}
@@ -623,11 +624,25 @@ export default function HomeScreen() {
                       <Ionicons name="chevron-forward" size={13} color={J.teal} />
                     </TouchableOpacity>
                   </View>
-                  <View style={s.tileGrid}>
-                    {mySpecials.map(sp => (
-                      <SpecialTile key={sp.id} special={sp} width={TILE_W} onPress={() => router.push(`/special/${sp.id}`)} />
-                    ))}
-                  </View>
+                  {mySpecials.length > 0 && (
+                    <View style={s.tileGrid}>
+                      {mySpecials.map(sp => (
+                        <SpecialTile key={sp.id} special={sp} width={TILE_W} onPress={() => router.push(`/special/${sp.id}`)} />
+                      ))}
+                    </View>
+                  )}
+                  {otherSpecials.length > 0 && (
+                    <>
+                      {mySpecials.length > 0 && (
+                        <Text style={[s.cardsHeadLabel, { marginTop: 20 }]}>AROUND THE ISLAND</Text>
+                      )}
+                      <View style={s.tileGrid}>
+                        {otherSpecials.map(sp => (
+                          <SpecialTile key={sp.id} special={sp} width={TILE_W} onPress={() => router.push(`/special/${sp.id}`)} />
+                        ))}
+                      </View>
+                    </>
+                  )}
                 </View>
               )}
             </>
