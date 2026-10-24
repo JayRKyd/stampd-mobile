@@ -15,7 +15,8 @@ export function TodayAt({ special }: { special: Special | null }) {
     <TouchableOpacity
       style={s.wrap}
       activeOpacity={0.88}
-      onPress={() => router.push(`/special/${special.id}`)}
+      // from=shop: the flyer's card button closes back here instead of opening this page again
+      onPress={() => router.push({ pathname: '/special/[id]', params: { id: special.id, from: 'shop' } })}
     >
       <View style={[s.thumb, { backgroundColor: special.card_color }]}>
         {special.image_url ? (

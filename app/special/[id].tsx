@@ -14,7 +14,7 @@ import { Special, useSpecialsToday, tagLabel, postedWhen, initials } from '@/lib
 const { width: SCREEN_W, height: SCREEN_H } = Dimensions.get('window');
 
 export default function SpecialScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id, from } = useLocalSearchParams<{ id: string; from?: string }>();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { specials, refresh } = useSpecialsToday();
@@ -23,8 +23,9 @@ export default function SpecialScreen() {
   const [gone, setGone] = useState(false);
   const special = specials.find(sp => sp.id === id) ?? fromServer;
 
-  // Membership (for "Open their card") and address (for Directions)
+  // Membership (for the shop-name tap), phone (Call) and address (Directions)
   const [membershipId, setMembershipId] = useState<string | null>(null);
+  const [phone, setPhone] = useState<string | null>(null);
   const [mapsQuery, setMapsQuery] = useState<string | null>(null);
 
   // Cold start from a push: the cache may not have it yet
@@ -51,11 +52,12 @@ export default function SpecialScreen() {
         user
           ? supabase.from('memberships').select('id').eq('user_id', user.id).eq('merchant_id', special.merchant_id).maybeSingle()
           : Promise.resolve({ data: null }),
-        supabase.from('merchants').select('address, latitude, longitude').eq('id', special.merchant_id).maybeSingle(),
+        supabase.from('merchants').select('address, latitude, longitude, phone').eq('id', special.merchant_id).maybeSingle(),
       ]);
       if (!alive) return;
       setMembershipId((ms as any)?.id ?? null);
       const mm = m as any;
+      setPhone(typeof mm?.phone === 'string' && mm.phone.trim() ? mm.phone : null);
       if (mm?.latitude != null && mm?.longitude != null) setMapsQuery(`${mm.latitude},${mm.longitude}`);
       else if (mm?.address) setMapsQuery(mm.address);
     })();
@@ -73,6 +75,19 @@ export default function SpecialScreen() {
   }
 
   const close = () => (router.canGoBack() ? router.back() : router.replace('/(tabs)'));
+
+  const call = () => {
+    if (phone) Linking.openURL(`tel:${phone.replace(/[^+\d]/g, '')}`).catch(() => {});
+  };
+
+  // Tapping the shop name: if this flyer was opened from the shop's own page,
+  // just close back to it. Otherwise swap the flyer for the shop page so the
+  // page's "Today at" block doesn't stack another copy of this flyer on top.
+  const openCard = () => {
+    if (!special) return;
+    if (from === 'shop') return close();
+    router.replace(membershipId ? `/card/${membershipId}` : `/discover/${special.merchant_id}`);
+  };
 
   // The flyer area: as wide as the screen allows, 4:5, but never taller than what's left
   const maxH = SCREEN_H - insets.top - insets.bottom - 300;
@@ -94,10 +109,10 @@ export default function SpecialScreen() {
                 <Text style={[s.logoInitials, { color: special.card_color }]}>{initials(special.business_name)}</Text>
               )}
             </View>
-            <View style={{ flex: 1, minWidth: 0 }}>
+            <TouchableOpacity style={{ flex: 1, minWidth: 0 }} onPress={openCard} activeOpacity={0.7} accessibilityLabel={`Open ${special.business_name}`}>
               <Text style={s.shop} numberOfLines={1}>{special.business_name}</Text>
-              <Text style={s.when}>{postedWhen(special)} · {tagLabel(special).toLowerCase()}</Text>
-            </View>
+              <Text style={s.when}>{postedWhen(special)} · {membershipId ? 'Open their card' : 'See the shop'}</Text>
+            </TouchableOpacity>
           </>
         )}
       </View>
@@ -133,14 +148,11 @@ export default function SpecialScreen() {
           </View>
 
           <View style={s.bottom}>
-            <Text style={s.caption}>{special.text}{/[.!?]$/.test(special.text) ? '' : '.'} Stop by.{special.earns_stamp ? ' Earns a stamp.' : ''}</Text>
+            <Text style={s.caption}>{special.text}{/[.!?]$/.test(special.text) ? '' : '.'} Stop by!{special.earns_stamp ? ' Earns a stamp.' : ''}</Text>
             <View style={s.btnRow}>
-              <TouchableOpacity
-                style={s.btnLight}
-                activeOpacity={0.85}
-                onPress={() => router.push(membershipId ? `/card/${membershipId}` : `/discover/${special.merchant_id}`)}
-              >
-                <Text style={s.btnLightText}>{membershipId ? 'Open their card' : 'Get their card'}</Text>
+              <TouchableOpacity style={[s.btnLight, !phone && { opacity: 0.4 }]} activeOpacity={0.85} onPress={call} disabled={!phone}>
+                <Ionicons name="call" size={15} color={J.ink} />
+                <Text style={s.btnLightText}>Call</Text>
               </TouchableOpacity>
               <TouchableOpacity style={[s.btnOutline, !mapsQuery && { opacity: 0.4 }]} activeOpacity={0.85} onPress={openDirections} disabled={!mapsQuery}>
                 <Ionicons name="navigate-outline" size={15} color={J.cream} />
@@ -171,9 +183,9 @@ const s = StyleSheet.create({
   tag: { position: 'absolute', top: 12, left: 12, height: 24, paddingHorizontal: 10, borderRadius: 12, backgroundColor: Colors.gold, alignItems: 'center', justifyContent: 'center' },
   tagText: { fontSize: 10, fontFamily: FontFamily.extrabold, color: '#0C2E29', letterSpacing: 0.8 },
   bottom: { paddingHorizontal: 20, gap: 12 },
-  caption: { fontSize: 15, lineHeight: 21, fontFamily: FontFamily.regular, color: 'rgba(247,242,232,0.9)' },
+  caption: { fontSize: 19, lineHeight: 26, fontFamily: FontFamily.bold, color: J.cream, letterSpacing: -0.2 },
   btnRow: { flexDirection: 'row', gap: 10 },
-  btnLight: { flex: 1, height: 48, borderRadius: 24, backgroundColor: J.cream, alignItems: 'center', justifyContent: 'center' },
+  btnLight: { flex: 1, height: 48, borderRadius: 24, backgroundColor: J.cream, flexDirection: 'row', gap: 6, alignItems: 'center', justifyContent: 'center' },
   btnLightText: { fontSize: 14, fontFamily: FontFamily.extrabold, color: J.ink },
   btnOutline: { flex: 1, height: 48, borderRadius: 24, borderWidth: 1.5, borderColor: 'rgba(247,242,232,0.3)', flexDirection: 'row', gap: 6, alignItems: 'center', justifyContent: 'center' },
   btnOutlineText: { fontSize: 14, fontFamily: FontFamily.extrabold, color: J.cream },

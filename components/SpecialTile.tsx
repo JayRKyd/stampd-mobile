@@ -33,7 +33,8 @@ export function SpecialTile({ special, width, onPress }: { special: Special; wid
         <Text style={s.tagText}>{tagLabel(special)}</Text>
       </View>
 
-      <LinearGradient colors={['rgba(0,0,0,0)', 'rgba(0,0,0,0.6)']} style={s.foot}>
+      {/* Deeper hue so the name reads over busy flyer artwork */}
+      <LinearGradient colors={['rgba(0,0,0,0)', 'rgba(0,0,0,0.55)', 'rgba(0,0,0,0.88)']} locations={[0, 0.45, 1]} style={s.foot}>
         <View style={s.logo}>
           {special.logo_url ? (
             <Image source={{ uri: special.logo_url }} style={s.logoImg} contentFit="contain" cachePolicy="memory-disk" />
@@ -80,9 +81,9 @@ const s = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    paddingTop: 22,
-    paddingBottom: 8,
-    paddingHorizontal: 8,
+    paddingTop: 34,
+    paddingBottom: 9,
+    paddingHorizontal: 9,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 7,
@@ -98,6 +99,6 @@ const s = StyleSheet.create({
   },
   logoImg: { width: '100%', height: '100%' },
   logoInitials: { fontSize: 9, fontFamily: FontFamily.extrabold },
-  name: { fontSize: 11.5, fontFamily: FontFamily.extrabold, color: '#fff' },
+  name: { fontSize: 11.5, fontFamily: FontFamily.extrabold, color: '#fff', textShadowColor: 'rgba(0,0,0,0.6)', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 3 },
   earns: { fontSize: 9.5, fontFamily: FontFamily.semibold, color: 'rgba(255,255,255,0.85)' },
 });

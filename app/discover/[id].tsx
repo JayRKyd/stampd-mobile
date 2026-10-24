@@ -348,7 +348,7 @@ export default function MerchantDetailScreen() {
 
           {/* Today's post from this shop, when there is one */}
           {todaySpecial && (
-            <View style={{ marginTop: 16 }}>
+            <View style={{ marginTop: 16, marginBottom: 16 }}>
               <TodayAt special={todaySpecial} />
             </View>
           )}

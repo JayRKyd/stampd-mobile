@@ -162,13 +162,13 @@ export default function DiscoverScreen() {
         {specials.length > 0 && (
           <TouchableOpacity style={s.todayStrip} onPress={() => router.push('/today')} activeOpacity={0.85}>
             <View style={s.todayStripIcon}>
-              <Ionicons name="megaphone" size={14} color="#fff" />
+              <Ionicons name="megaphone" size={14} color={Colors.gold} />
             </View>
             <Text style={s.todayStripText}>
               <Text style={s.todayStripCount}>{specials.length}</Text> {specials.length === 1 ? 'post' : 'posts'} on today
             </Text>
             <Text style={s.todayStripLink}>See what's on</Text>
-            <Ionicons name="chevron-forward" size={14} color={J.teal} />
+            <Ionicons name="chevron-forward" size={14} color="rgba(255,255,255,0.85)" />
           </TouchableOpacity>
         )}
 
@@ -399,22 +399,21 @@ const s = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-    backgroundColor: '#fff',
+    backgroundColor: J.teal,
     borderRadius: 14,
     paddingVertical: 10,
     paddingHorizontal: 12,
+    marginHorizontal: 20, // line up with the business cards below
     marginBottom: 12,
-    borderWidth: 1,
-    borderColor: 'rgba(0,96,90,0.25)',
   },
   todayStripIcon: {
     width: 28, height: 28, borderRadius: 8,
-    backgroundColor: J.teal,
+    backgroundColor: 'rgba(255,255,255,0.14)',
     alignItems: 'center', justifyContent: 'center',
   },
-  todayStripText: { flex: 1, fontSize: 13, fontFamily: FontFamily.semibold, color: J.ink },
-  todayStripCount: { fontFamily: FontFamily.extrabold, color: J.teal },
-  todayStripLink: { fontSize: 12, fontFamily: FontFamily.bold, color: J.teal },
+  todayStripText: { flex: 1, fontSize: 13, fontFamily: FontFamily.semibold, color: '#fff' },
+  todayStripCount: { fontFamily: FontFamily.extrabold, color: Colors.gold },
+  todayStripLink: { fontSize: 12, fontFamily: FontFamily.bold, color: 'rgba(255,255,255,0.85)' },
   todayDot: {
     position: 'absolute', top: -3, right: -3,
     width: 12, height: 12, borderRadius: 6,
