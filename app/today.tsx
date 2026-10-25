@@ -4,6 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { FontFamily, Palette as J } from '@/constants/theme';
 import { useSpecialsToday } from '@/lib/specials';
+import { useIsland } from '@/lib/island';
 import { SpecialTile } from '@/components/SpecialTile';
 
 // The island view: everything running today, your spots first.
@@ -15,6 +16,7 @@ export default function TodayScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { specials, mine, others, isLoading } = useSpecialsToday();
+  const { islandName } = useIsland();
 
   const dateLine = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }).toUpperCase();
 
@@ -25,7 +27,7 @@ export default function TodayScreen() {
           <Ionicons name="chevron-back" size={20} color={J.ink} />
         </TouchableOpacity>
         <View style={{ flex: 1, minWidth: 0 }}>
-          <Text style={s.title}>Today in Grand Bahama</Text>
+          <Text style={s.title} numberOfLines={1}>Today in {islandName}</Text>
           <Text style={s.sub}>{dateLine} · {specials.length} {specials.length === 1 ? 'POST' : 'POSTS'}</Text>
         </View>
       </View>

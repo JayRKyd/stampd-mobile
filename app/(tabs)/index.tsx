@@ -29,6 +29,8 @@ import { CoachMarks, CoachStep } from '@/components/CoachMarks';
 import { SpecialTile } from '@/components/SpecialTile';
 import { consumeTourRequest, markTourDone } from '@/lib/tour';
 import { useSpecialsToday, tagLabel } from '@/lib/specials';
+import { useIsland, syncIslandFromServer } from '@/lib/island';
+import { IslandPicker } from '@/components/IslandPicker';
 
 const SCREEN_W = Dimensions.get('window').width;
 const SCREEN_H = Dimensions.get('window').height;
@@ -67,6 +69,9 @@ export default function HomeScreen() {
   // Everything running today; your own shops lead the carousel and the Today view
   const { specials: allSpecials, mine: mySpecials, others: otherSpecials } = useSpecialsToday();
   const specialSlides = mySpecials.slice(0, 2);
+  // The island badge opens the picker; Discover and Today follow the choice
+  const { islandName } = useIsland();
+  const [islandOpen, setIslandOpen] = useState(false);
   const heroScrollRef = useRef<ScrollView>(null);
   const heroIndexRef = useRef(0);
   // Auto-advance holds off until this timestamp; touching the carousel
@@ -93,13 +98,16 @@ export default function HomeScreen() {
     if (!user) return null;
 
     const [{ data: prof }, { data: ms }] = await Promise.all([
-      supabase.from('users').select('first_name, last_name, personal_pin, created_at').eq('id', user.id).single(),
+      supabase.from('users').select('first_name, last_name, personal_pin, created_at, island').eq('id', user.id).single(),
       supabase
         .from('memberships')
         .select(`id, current_stamps, total_stamps_earned, total_rewards_earned, last_stamp_at, merchants (id, business_name, category, logo_url), loyalty_cards (stamp_count_required, reward_title, stamp_icon, card_color, visit_label)`)
         .eq('user_id', user.id)
         .order('last_stamp_at', { ascending: false }),
     ]);
+
+    // The profile is the source of truth for the island; mirror it locally
+    syncIslandFromServer((prof as any)?.island);
 
     return {
       profile: prof as Profile,
@@ -304,11 +312,18 @@ export default function HomeScreen() {
     <View style={s.root} ref={rootRef} collapsable={false}>
         {/* ===== Teal header ===== */}
         <View style={[s.header, { paddingTop: insets.top + 10 }]}>
-          {/* Location badge — static until multi-island launch */}
-          <View style={s.locationChip}>
+          {/* Island badge: tap to switch islands */}
+          <TouchableOpacity
+            style={s.locationChip}
+            onPress={() => setIslandOpen(true)}
+            activeOpacity={0.75}
+            hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
+            accessibilityLabel={`Island: ${islandName}. Change island`}
+          >
             <Ionicons name="location" size={12} color="rgba(255,255,255,0.8)" />
-            <Text style={s.locationText}>Grand Bahama</Text>
-          </View>
+            <Text style={s.locationText}>{islandName}</Text>
+            <Ionicons name="chevron-down" size={12} color="rgba(255,255,255,0.8)" style={{ marginLeft: 2 }} />
+          </TouchableOpacity>
 
           {/* Greeting row */}
           <View style={s.heyRow}>
@@ -720,6 +735,8 @@ export default function HomeScreen() {
           }}
         />
       )}
+
+      <IslandPicker visible={islandOpen} onClose={() => setIslandOpen(false)} />
     </View>
   );
 }

@@ -7,6 +7,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '@/lib/supabase';
 import { useCachedData } from '@/lib/dataCache';
 import { useSpecialsToday } from '@/lib/specials';
+import { useIsland } from '@/lib/island';
+import { IslandPicker } from '@/components/IslandPicker';
 import { cardGradient, shadeColor } from '@/lib/cardColor';
 import { visitLabelWord } from '@/lib/visitLabel';
 import { Colors, FontFamily, Palette as J, Spacing, Shadow } from '@/constants/theme';
@@ -40,8 +42,11 @@ export default function DiscoverScreen() {
   const insets = useSafeAreaInsets();
   const [search, setSearch] = useState('');
   const [activeCategory, setActiveCategory] = useState('All');
+  // The directory is one island at a time; the label in the header switches it
+  const { island, islandName } = useIsland();
+  const [islandOpen, setIslandOpen] = useState(false);
 
-  const { data: dirData, isLoading: loading } = useCachedData('discover', async () => {
+  const { data: dirData, isLoading: loading } = useCachedData(`discover:${island}`, async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return null;
 
@@ -54,6 +59,7 @@ export default function DiscoverScreen() {
         .from('merchants')
         .select('id, business_name, category, address, logo_url, merchant_type, trade, workplace, loyalty_cards(reward_title, card_color, stamp_count_required, visit_label)')
         .eq('is_active', true)
+        .eq('island', island)
         .order('business_name'),
     ]);
 
@@ -96,7 +102,17 @@ export default function DiscoverScreen() {
       <View style={[s.header, { paddingTop: insets.top + 12 }]}>
         <View style={s.headerRow}>
           <View>
-            <Text style={s.headerEyebrow}>All Businesses</Text>
+            <TouchableOpacity
+              style={s.islandBtn}
+              onPress={() => setIslandOpen(true)}
+              activeOpacity={0.75}
+              hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
+              accessibilityLabel={`Island: ${islandName}. Change island`}
+            >
+              <Ionicons name="location" size={11} color="rgba(255,255,255,0.7)" />
+              <Text style={s.headerEyebrow}>{islandName}</Text>
+              <Ionicons name="chevron-down" size={11} color="rgba(255,255,255,0.7)" />
+            </TouchableOpacity>
             <Text style={s.headerTitle}>Discover</Text>
           </View>
           <TouchableOpacity
@@ -176,7 +192,7 @@ export default function DiscoverScreen() {
         {!loading && (
           <Text style={s.resultsLabel}>
             {filtered.length} {filtered.length === 1 ? 'business' : 'businesses'}
-            {activeCategory !== 'All' ? ` in ${activeCategory}` : ''}
+            {activeCategory !== 'All' ? ` in ${activeCategory}` : ` in ${islandName}`}
           </Text>
         )}
 
@@ -194,11 +210,15 @@ export default function DiscoverScreen() {
               <View style={s.emptyIconBox}>
                 <Ionicons name="search-outline" size={28} color={J.inkSoft} />
               </View>
-              <Text style={s.emptyTitle}>No businesses found</Text>
+              <Text style={s.emptyTitle}>
+                {search.trim() || activeCategory !== 'All' ? 'No businesses found' : `Nothing in ${islandName} yet`}
+              </Text>
               <Text style={s.emptyBody}>
                 {search.trim()
                   ? `No results for "${search}". Try a different name`
-                  : 'No businesses in this category yet'}
+                  : activeCategory !== 'All'
+                  ? `No ${activeCategory === 'Pros' ? 'pros' : activeCategory.toLowerCase()} in ${islandName} yet`
+                  : 'Shops here are joining soon. Switch islands to browse elsewhere.'}
               </Text>
               {(search.trim() || activeCategory !== 'All') && (
                 <TouchableOpacity
@@ -294,6 +314,8 @@ export default function DiscoverScreen() {
           })}
         </ScrollView>
       </View>
+
+      <IslandPicker visible={islandOpen} onClose={() => setIslandOpen(false)} />
     </View>
   );
 }
@@ -307,9 +329,10 @@ const s = StyleSheet.create({
     flexDirection: 'row', justifyContent: 'space-between',
     alignItems: 'flex-start', marginBottom: Spacing.lg,
   },
+  islandBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, marginBottom: 2, alignSelf: 'flex-start' },
   headerEyebrow: {
-    fontSize: 12, fontFamily: FontFamily.medium,
-    color: 'rgba(255,255,255,0.6)', marginBottom: 2, letterSpacing: 0.4,
+    fontSize: 12, fontFamily: FontFamily.semibold,
+    color: 'rgba(255,255,255,0.75)', letterSpacing: 0.4,
   },
   headerTitle: {
     fontSize: 30, fontFamily: FontFamily.extrabold,

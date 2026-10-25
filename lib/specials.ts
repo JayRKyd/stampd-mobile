@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase';
 import { useCachedData } from '@/lib/dataCache';
+import { useIsland } from '@/lib/island';
 
 // Everything merchants have posted that is running today. One read feeds the
 // Today pill and view on Home, the carousel slide, the island view, the card
@@ -49,8 +50,10 @@ function sane(rows: unknown): Special[] {
 }
 
 export function useSpecialsToday() {
-  const { data, isLoading, refresh } = useCachedData<{ rows: Special[] }>(CACHE_KEY, async () => {
-    const { data: rows, error } = await supabase.rpc('specials_today');
+  // One board per island; the cache key keeps the two apart
+  const { island } = useIsland();
+  const { data, isLoading, refresh } = useCachedData<{ rows: Special[] }>(`${CACHE_KEY}:${island}`, async () => {
+    const { data: rows, error } = await supabase.rpc('specials_today', { p_island: island });
     if (error) return null; // keep whatever was cached
     return { rows: sane(rows) };
   });

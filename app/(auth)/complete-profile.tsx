@@ -8,6 +8,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '@/lib/supabase';
 import { nameProfanityError } from '@/lib/profanity';
+import { ISLANDS, IslandId, DEFAULT_ISLAND, syncIslandFromServer } from '@/lib/island';
 import { FontCap, Colors, FontFamily, Palette as J } from '@/constants/theme';
 
 export default function CompleteProfileScreen() {
@@ -15,6 +16,8 @@ export default function CompleteProfileScreen() {
   const insets = useSafeAreaInsets();
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
+  // Picked once here; the badge on Home changes it later
+  const [island, setIsland] = useState<IslandId>(DEFAULT_ISLAND);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -44,7 +47,7 @@ export default function CompleteProfileScreen() {
     const last = lastName.trim();
 
     const [{ error: updateError }, { error: authError }] = await Promise.all([
-      supabase.from('users').update({ first_name: first, last_name: last }).eq('id', user.id),
+      supabase.from('users').update({ first_name: first, last_name: last, island }).eq('id', user.id),
       supabase.auth.updateUser({ data: { first_name: first, last_name: last } }),
     ]);
 
@@ -55,6 +58,7 @@ export default function CompleteProfileScreen() {
       return;
     }
 
+    syncIslandFromServer(island);
     router.replace('/(tabs)');
   }
 
@@ -92,6 +96,26 @@ export default function CompleteProfileScreen() {
             autoCapitalize="words"
           />
         </View>
+
+        <Text {...FontCap} style={s.islandLabel}>Which island are you on?</Text>
+        <View style={s.islandRow}>
+          {ISLANDS.map(i => {
+            const on = i.id === island;
+            return (
+              <TouchableOpacity
+                key={i.id}
+                style={[s.islandPill, on && s.islandPillOn]}
+                onPress={() => setIsland(i.id)}
+                activeOpacity={0.85}
+                accessibilityState={{ selected: on }}
+              >
+                <Ionicons name="location" size={14} color={on ? '#fff' : J.teal} />
+                <Text {...FontCap} style={[s.islandPillText, on && s.islandPillTextOn]}>{i.name}</Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+        <Text {...FontCap} style={s.islandHint}>You'll see the shops near you. You can change this any time from Home.</Text>
 
         {error ? (
           <View style={s.errorRow}>
@@ -148,6 +172,25 @@ const s = StyleSheet.create({
     color: J.ink,
   },
   inputDivider: { height: 1, backgroundColor: 'rgba(0,0,0,0.07)', marginHorizontal: 16 },
+
+  islandLabel: { fontSize: 13, fontFamily: FontFamily.bold, color: J.ink, marginTop: 6, marginBottom: 10 },
+  islandRow: { flexDirection: 'row', gap: 10 },
+  islandPill: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#fff',
+    borderWidth: 1.5,
+    borderColor: 'rgba(0,0,0,0.10)',
+  },
+  islandPillOn: { backgroundColor: J.teal, borderColor: J.teal },
+  islandPillText: { fontSize: 14, fontFamily: FontFamily.semibold, color: J.ink },
+  islandPillTextOn: { color: '#fff', fontFamily: FontFamily.bold },
+  islandHint: { fontSize: 12, fontFamily: FontFamily.regular, color: J.inkSoft, lineHeight: 17, marginTop: 10, marginBottom: 18 },
 
   errorRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 14, paddingHorizontal: 4 },
   errorText: { flex: 1, fontSize: 12, fontFamily: FontFamily.medium, color: Colors.danger },
