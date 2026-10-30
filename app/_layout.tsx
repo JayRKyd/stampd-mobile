@@ -18,6 +18,7 @@ import { createSessionFromAuthUrl, isAuthCallbackUrl } from '@/lib/authDeepLink'
 import { registerPushToken, onSpecialPushTapped } from '@/lib/pushNotifications';
 import { profileNamesComplete } from '@/lib/ensureProfile';
 import { clearDataCache } from '@/lib/dataCache';
+import { peekPendingGiftCode } from '@/lib/pendingGift';
 import { LiveNotifications } from '@/components/LiveNotifications';
 import { Colors, Palette } from '@/constants/theme';
 
@@ -133,7 +134,13 @@ function RootLayout() {
       return;
     }
 
-    if (inAuth) router.replace('/(tabs)');
+    if (inAuth) {
+      // Signed in (or just signed up) with a gift card link waiting: land on
+      // the claim screen with the code filled in, instead of Home
+      peekPendingGiftCode().then(pending => {
+        router.replace(pending ? { pathname: '/gift/claim', params: { code: pending } } : '/(tabs)');
+      });
+    }
   }, [session, sessionLoaded, fontsLoaded, profileReady, segments]);
 
   // Boot gate: hold a blank view only until the FIRST full ready state.

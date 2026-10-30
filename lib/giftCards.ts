@@ -80,7 +80,7 @@ export function shareGiftCard(card: GiftCard) {
   const message =
     `${who} a ${money(card.amount_cents)} gift card for ${card.business_name} on Stampd.\n\n` +
     `Your code: ${code}\n\n` +
-    `Open Stampd, go to Rewards, tap "Have a gift card code?" and type it in. ` +
-    `Don't have Stampd yet? Get it here: https://stampdbahamas.com/gift/${code.replace('-', '')}`;
+    `Tap this link to add it: https://stampdbahamas.com/g/${code.replace('-', '')}\n\n` +
+    `Or open Stampd, go to Rewards, tap "Have a gift card code?" and type it in.`;
   return Share.share({ message }).catch(() => {});
 }

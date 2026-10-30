@@ -17,6 +17,7 @@
       "supportsTablet": false,
       "bundleIdentifier": "com.stampdbahamas.app",
       "usesAppleSignIn": true,
+      "associatedDomains": ["applinks:stampdbahamas.com", "applinks:www.stampdbahamas.com"],
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
@@ -29,7 +30,18 @@
       "package": "com.stampdbahamas.app",
       "googleServicesFile": "./google-services.json",
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            { "scheme": "https", "host": "stampdbahamas.com", "pathPrefix": "/g/" },
+            { "scheme": "https", "host": "www.stampdbahamas.com", "pathPrefix": "/g/" }
+          ],
+          "category": ["BROWSABLE", "DEFAULT"]
+        }
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"

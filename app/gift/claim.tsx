@@ -10,6 +10,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '@/lib/supabase';
 import { revalidateCache } from '@/lib/dataCache';
 import { GiftCard, saneCard, formatClaimInput, money } from '@/lib/giftCards';
+import { takePendingGiftCode } from '@/lib/pendingGift';
 import { Colors, FontFamily, Palette as J } from '@/constants/theme';
 
 // "Have a gift card?" Type the 8-character code from the slip or message.
@@ -34,6 +35,13 @@ export default function ClaimGiftCardScreen() {
   const [claiming, setClaiming] = useState(false);
 
   const complete = code.replace('-', '').length === 8;
+
+  // A code that arrived by link before sign-in is waiting here; use it once
+  useEffect(() => {
+    takePendingGiftCode().then(pending => {
+      if (pending && !params.code) setCode(formatClaimInput(pending));
+    });
+  }, [params.code]);
 
   // Look the code up as soon as it's complete
   useEffect(() => {
