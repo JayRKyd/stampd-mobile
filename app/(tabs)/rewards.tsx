@@ -188,13 +188,22 @@ export default function RewardsScreen() {
           </View>
         </View>
 
-        {/* Stat card, matching the home header */}
-        <View style={s.statCard}>
-          <View style={s.statTop}>
-            <Ionicons name="gift" size={21} color={J.giftRed} />
-            <Text style={s.statNum}>{pendingCount}</Text>
+        {/* Two stat cards, matching the home header */}
+        <View style={s.statsRow}>
+          <View style={s.statCard}>
+            <View style={s.statTop}>
+              <Ionicons name="gift" size={21} color={J.giftRed} />
+              <Text style={s.statNum}>{pendingCount}</Text>
+            </View>
+            <Text style={s.statLabel}>Ready to redeem</Text>
           </View>
-          <Text style={s.statLabel}>Ready to redeem</Text>
+          <View style={s.statCard}>
+            <View style={s.statTop}>
+              <Ionicons name="card" size={21} color={Colors.gold} />
+              <Text style={s.statNum}>{giftHeld.filter(g => g.status === 'active').length}</Text>
+            </View>
+            <Text style={s.statLabel}>Gift cards</Text>
+          </View>
         </View>
       </View>
 
@@ -443,12 +452,13 @@ const s = StyleSheet.create({
     borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)',
     alignItems: 'center', justifyContent: 'center', marginTop: 2,
   },
+  statsRow: { flexDirection: 'row', gap: 12 },
   statCard: {
+    flex: 1,
     backgroundColor: '#fff',
     borderRadius: 14,
     paddingVertical: 12,
     paddingHorizontal: 14,
-    alignSelf: 'stretch',
   },
   statTop: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 2 },
   statNum: { fontSize: 22, fontFamily: FontFamily.extrabold, color: J.ink, letterSpacing: -0.3 },
