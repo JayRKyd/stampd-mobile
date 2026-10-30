@@ -11,6 +11,7 @@ import { useCachedData } from '@/lib/dataCache';
 import { maybeAskForReview } from '@/lib/review';
 import { cardGradient, shadeColor } from '@/lib/cardColor';
 import { visitLabelWord } from '@/lib/visitLabel';
+import { useMyGiftCards, money, shareGiftCard } from '@/lib/giftCards';
 import { Colors, FontFamily, Palette as J, Radius, Spacing, Shadow } from '@/constants/theme';
 
 type Reward = {
@@ -159,6 +160,10 @@ export default function RewardsScreen() {
   const rewards = rwData?.rewards ?? [];
   const history = rwData?.history ?? [];
   const nextUp = rwData?.nextUp ?? null;
+  // Gift cards live here too: the ones you hold, the ones you've sent, and
+  // the way in for a code someone gave you
+  const { held: giftHeld, sent: giftSent } = useMyGiftCards();
+  const giftRows = [...giftHeld.filter(g => g.status === 'active'), ...giftSent];
 
   const pendingCount = rewards.length;
 
@@ -199,6 +204,54 @@ export default function RewardsScreen() {
           showsVerticalScrollIndicator={false}
           contentContainerStyle={[s.content, { paddingBottom: insets.bottom + 100 }]}
         >
+          {/* Gift cards: held ones open the card, sent ones can be shared again */}
+          {giftRows.length > 0 && <Text style={s.sectionLabel}>GIFT CARDS</Text>}
+          {giftRows.map(g => g.is_mine ? (
+            <TouchableOpacity key={g.id} style={[s.giftTile, { backgroundColor: g.card_color }]} onPress={() => router.push(`/gift/${g.id}`)} activeOpacity={0.9}>
+              <View style={s.giftLogo}>
+                <Text style={[s.giftLogoText, { color: g.card_color }]}>{g.business_name.slice(0, 2).toUpperCase()}</Text>
+              </View>
+              <View style={{ flex: 1, minWidth: 0 }}>
+                <Text style={s.giftName} numberOfLines={1}>{g.business_name}</Text>
+                <Text style={s.giftSub} numberOfLines={1}>
+                  {g.from_name ? `From ${g.from_name}` : 'Gift card'}
+                  {g.expires_at ? ` · expires ${new Date(g.expires_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}` : ''}
+                </Text>
+              </View>
+              <View style={{ alignItems: 'flex-end' }}>
+                <Text style={s.giftAmt}>{money(g.balance_cents)}</Text>
+                <Text style={s.giftLeft}>LEFT</Text>
+              </View>
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity key={g.id} style={s.giftSent} onPress={() => router.push(`/gift/${g.id}`)} activeOpacity={0.9}>
+              <View style={s.giftSentIcon}>
+                <Ionicons name="gift" size={18} color={Colors.goldDark} />
+              </View>
+              <View style={{ flex: 1, minWidth: 0 }}>
+                <Text style={s.giftSentName} numberOfLines={1}>
+                  {g.for_name ? `For ${g.for_name} · ` : ''}{money(g.amount_cents)} at {g.business_name}
+                </Text>
+                <Text style={s.giftSentSub} numberOfLines={1}>
+                  {g.status === 'unclaimed' ? 'You sent this · not claimed yet' : g.status === 'used' ? 'Claimed and used up' : 'Claimed'}
+                </Text>
+              </View>
+              {g.status === 'unclaimed' && (
+                <TouchableOpacity style={s.giftShare} onPress={() => shareGiftCard(g)} activeOpacity={0.85} hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}>
+                  <Ionicons name="share-outline" size={13} color="#fff" />
+                  <Text style={s.giftShareText}>Share</Text>
+                </TouchableOpacity>
+              )}
+            </TouchableOpacity>
+          ))}
+          <TouchableOpacity style={[s.cardsLinkRow, { marginBottom: Spacing.xl }]} onPress={() => router.push('/gift/claim')} activeOpacity={0.8}>
+            <View style={s.cardsLinkIcon}>
+              <Ionicons name="key-outline" size={17} color={J.teal} />
+            </View>
+            <Text style={s.cardsLinkText}>Have a gift card code?</Text>
+            <Ionicons name="chevron-forward" size={15} color={J.inkSoft} />
+          </TouchableOpacity>
+
           <Text style={s.sectionLabel}>READY TO REDEEM</Text>
 
           {loading ? (
@@ -482,6 +535,28 @@ const s = StyleSheet.create({
   },
   dot: { width: 6, height: 6, borderRadius: 3, backgroundColor: 'rgba(26,43,42,0.18)' },
   dotActive: { backgroundColor: J.teal, width: 16 },
+
+  // Gift cards
+  giftTile: {
+    flexDirection: 'row', alignItems: 'center', gap: 12,
+    borderRadius: 18, padding: 14, marginBottom: 10, ...Shadow.md,
+  },
+  giftLogo: { width: 42, height: 42, borderRadius: 12, backgroundColor: J.cream, alignItems: 'center', justifyContent: 'center' },
+  giftLogoText: { fontSize: 14, fontFamily: FontFamily.extrabold },
+  giftName: { fontSize: 15, fontFamily: FontFamily.extrabold, color: '#fff' },
+  giftSub: { fontSize: 12, fontFamily: FontFamily.medium, color: 'rgba(255,255,255,0.7)', marginTop: 1 },
+  giftAmt: { fontSize: 18, fontFamily: FontFamily.extrabold, color: '#fff', letterSpacing: -0.4 },
+  giftLeft: { fontSize: 10, fontFamily: FontFamily.bold, color: Colors.gold, letterSpacing: 0.8 },
+  giftSent: {
+    flexDirection: 'row', alignItems: 'center', gap: 12,
+    backgroundColor: '#fff', borderRadius: 18, padding: 14, marginBottom: 10,
+    borderWidth: 1.5, borderStyle: 'dashed', borderColor: 'rgba(0,96,90,0.3)',
+  },
+  giftSentIcon: { width: 42, height: 42, borderRadius: 12, backgroundColor: 'rgba(212,168,67,0.18)', alignItems: 'center', justifyContent: 'center' },
+  giftSentName: { fontSize: 14, fontFamily: FontFamily.extrabold, color: J.ink },
+  giftSentSub: { fontSize: 12, fontFamily: FontFamily.regular, color: J.inkSoft, marginTop: 1 },
+  giftShare: { flexDirection: 'row', alignItems: 'center', gap: 5, height: 34, paddingHorizontal: 12, borderRadius: 17, backgroundColor: J.teal },
+  giftShareText: { fontSize: 12, fontFamily: FontFamily.bold, color: '#fff' },
 
   // Quiet route back to the wallet when tickets fill the page
   cardsLinkRow: {

@@ -14,6 +14,7 @@ import { getStampIcon } from '@/lib/stampIcons';
 import { cardGradient, heroGradient } from '@/lib/cardColor';
 import { StampCard } from '@/components/StampCard';
 import { TodayAt } from '@/components/TodayAt';
+import { useMyGiftCards, money } from '@/lib/giftCards';
 import { useSpecialsToday, specialForMerchant } from '@/lib/specials';
 
 const { width } = Dimensions.get('window');
@@ -165,6 +166,9 @@ export default function CardDetailScreen() {
   // Today's post from this shop, and the per-shop mute for its pushes
   const { specials: todaySpecials } = useSpecialsToday();
   const todaySpecial = specialForMerchant(todaySpecials, membership?.merchants?.id);
+  // An active gift card at this shop, if the customer holds one
+  const { active: activeGiftCards } = useMyGiftCards();
+  const giftCard = activeGiftCards.find(g => g.merchant_id === membership?.merchants?.id) ?? null;
   const [muted, setMuted] = useState<boolean | null>(null);
   const isMuted = muted ?? !!membership?.specials_muted;
   async function toggleMuted(next: boolean) {
@@ -308,6 +312,20 @@ export default function CardDetailScreen() {
       {/* ── White bottom sheet ─────────────────────── */}
       <View style={s.sheet}>
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={[s.sheetScroll, { paddingBottom: insets.bottom + 32 }]}>
+
+          {/* A gift card at this shop: the balance, and the way to the code */}
+          {giftCard && (
+            <TouchableOpacity style={s.giftRow} onPress={() => router.push(`/gift/${giftCard.id}`)} activeOpacity={0.85}>
+              <View style={s.giftIcon}>
+                <Ionicons name="gift" size={18} color={Colors.goldDark} />
+              </View>
+              <View style={{ flex: 1, minWidth: 0 }}>
+                <Text style={s.giftTitle}>{money(giftCard.balance_cents)} gift card balance</Text>
+                <Text style={s.giftSub}>Tap to show your code at the counter</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={16} color={J.inkMuted} />
+            </TouchableOpacity>
+          )}
 
           {todaySpecial && (
             <View style={{ marginBottom: 16 }}>
@@ -500,6 +518,14 @@ const s = StyleSheet.create({
     borderColor: J.lineSoft,
     marginTop: 4,
   },
+  giftRow: {
+    flexDirection: 'row', alignItems: 'center', gap: 12,
+    backgroundColor: '#fff', borderRadius: 18, padding: 14, marginBottom: 16,
+    borderWidth: 1.5, borderColor: 'rgba(212,168,67,0.6)',
+  },
+  giftIcon: { width: 40, height: 40, borderRadius: 12, backgroundColor: 'rgba(212,168,67,0.18)', alignItems: 'center', justifyContent: 'center' },
+  giftTitle: { fontSize: 14, fontFamily: FontFamily.extrabold, color: J.ink },
+  giftSub: { fontSize: 12, fontFamily: FontFamily.regular, color: J.inkSoft, marginTop: 2 },
   muteTitle: { fontSize: 14, fontFamily: FontFamily.bold, color: J.ink },
   muteSub: { fontSize: 12, fontFamily: FontFamily.regular, color: J.inkSoft, marginTop: 2, lineHeight: 17 },
 
