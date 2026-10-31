@@ -22,6 +22,7 @@ const EXPLAIN: Record<string, string> = {
   expired: 'This gift card has expired. Ask the shop that sold it.',
   void: 'The shop cancelled this gift card. Ask them at the counter.',
   unauthorized: 'Sign in to add a gift card.',
+  too_many_tries: 'Too many wrong codes. Wait an hour and try again, or ask the person who sent it to check the code.',
 };
 
 export default function ClaimGiftCardScreen() {
