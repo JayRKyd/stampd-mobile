@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal, ActivityIndicator, Dimensions } from 'react-native';
+import { GiftCardFace } from '@/components/GiftCardFace';
 import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -153,35 +154,19 @@ export default function GiftCardScreen() {
 
       <ScrollView style={s.sheet} contentContainerStyle={[s.sheetContent, { paddingBottom: insets.bottom + 24 }]} showsVerticalScrollIndicator={false}>
         {/* the card */}
-        <View style={[s.card, { backgroundColor: card.card_color }, (used || voided) && { opacity: 0.6 }]}>
-          <View style={s.cardHead}>
-            <View style={s.logo}>
-              {card.logo_url ? (
-                <Image source={{ uri: card.logo_url }} style={s.logoImg} contentFit="contain" cachePolicy="memory-disk" />
-              ) : (
-                <Text style={[s.logoInitials, { color: card.card_color }]}>{card.business_name.slice(0, 2).toUpperCase()}</Text>
-              )}
-            </View>
-            <View style={{ flex: 1, minWidth: 0 }}>
-              <Text style={s.cardName} numberOfLines={1}>{card.business_name}</Text>
-              <Text style={s.cardFrom} numberOfLines={1}>
-                {card.for_name ? `For ${card.for_name}` : 'Gift card'}{card.from_name ? ` · from ${card.from_name}` : ''}
-              </Text>
-            </View>
-            <View style={s.tag}><Text style={s.tagText}>{voided ? 'CANCELLED' : used ? 'USED' : 'GIFT CARD'}</Text></View>
+        <GiftCardFace
+          card={card}
+          width={Dimensions.get('window').width - 40}
+          amountCents={card.balance_cents}
+          amountNote={voided ? 'cancelled by the shop' : used ? 'used up' : card.balance_cents !== card.amount_cents ? `left of ${money(card.amount_cents)}` : undefined}
+          dimmed={used || voided}
+        />
+        {card.balance_cents !== card.amount_cents && !voided && (
+          <View style={s.barWrap}>
+            <View style={s.bar}><View style={[s.barFill, { width: `${usedPct}%` }]} /></View>
+            <Text style={s.barText}>{money(card.amount_cents - card.balance_cents)} of {money(card.amount_cents)} used</Text>
           </View>
-          <View style={s.amountRow}>
-            <Text style={s.amount}>{money(card.balance_cents)}</Text>
-            <Text style={s.amountSub}>{card.balance_cents === card.amount_cents ? 'balance' : `left of ${money(card.amount_cents)}`}</Text>
-          </View>
-          {card.balance_cents !== card.amount_cents && (
-            <View style={s.barWrap}>
-              <View style={s.bar}><View style={[s.barFill, { width: `${usedPct}%` }]} /></View>
-              <Text style={s.barText}>{money(card.amount_cents - card.balance_cents)} used</Text>
-            </View>
-          )}
-          {!!card.note && <Text style={s.note}>“{card.note}”{card.from_name ? <Text style={s.noteFrom}> — {card.from_name}</Text> : null}</Text>}
-        </View>
+        )}
 
         {/* meta */}
         <View style={s.metaRow}>
@@ -280,10 +265,10 @@ const s = StyleSheet.create({
   amountRow: { flexDirection: 'row', alignItems: 'baseline', gap: 8 },
   amount: { fontSize: 44, fontFamily: FontFamily.extrabold, color: '#fff', letterSpacing: -1.5, lineHeight: 48 },
   amountSub: { fontSize: 13, fontFamily: FontFamily.semibold, color: 'rgba(255,255,255,0.7)' },
-  barWrap: { gap: 6 },
-  bar: { height: 8, borderRadius: 4, backgroundColor: 'rgba(255,255,255,0.18)', overflow: 'hidden' },
+  barWrap: { gap: 6, backgroundColor: '#fff', borderRadius: 14, padding: 12 },
+  bar: { height: 8, borderRadius: 4, backgroundColor: 'rgba(0,0,0,0.07)', overflow: 'hidden' },
   barFill: { height: 8, borderRadius: 4, backgroundColor: Colors.gold },
-  barText: { fontSize: 11, fontFamily: FontFamily.semibold, color: 'rgba(255,255,255,0.7)' },
+  barText: { fontSize: 11, fontFamily: FontFamily.semibold, color: J.inkSoft },
   note: { fontSize: 14, fontFamily: FontFamily.regular, fontStyle: 'italic', color: '#fff', backgroundColor: 'rgba(255,255,255,0.12)', borderRadius: 14, padding: 12, lineHeight: 20 },
   noteFrom: { fontStyle: 'normal', fontFamily: FontFamily.bold },
 

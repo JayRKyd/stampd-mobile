@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, TextInput, ActivityIndicator,
-  KeyboardAvoidingView, Platform, ScrollView,
+  KeyboardAvoidingView, Platform, ScrollView, Dimensions,
 } from 'react-native';
-import { Image } from 'expo-image';
+import { GiftCardFace } from '@/components/GiftCardFace';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -133,26 +133,7 @@ export default function ClaimGiftCardScreen() {
         {found && (
           <View style={s.foundCard}>
             <Text style={s.foundLabel}>FOUND IT</Text>
-            <View style={[s.card, { backgroundColor: found.card_color }]}>
-              <View style={s.cardHead}>
-                <View style={s.logo}>
-                  {found.logo_url ? (
-                    <Image source={{ uri: found.logo_url }} style={s.logoImg} contentFit="contain" cachePolicy="memory-disk" />
-                  ) : (
-                    <Text style={[s.logoInitials, { color: found.card_color }]}>{found.business_name.slice(0, 2).toUpperCase()}</Text>
-                  )}
-                </View>
-                <View style={{ flex: 1, minWidth: 0 }}>
-                  <Text style={s.cardName} numberOfLines={1}>{found.business_name}</Text>
-                  <Text style={s.cardFrom} numberOfLines={1}>
-                    {found.for_name ? `For ${found.for_name}` : 'Gift card'}{found.from_name ? ` · from ${found.from_name}` : ''}
-                  </Text>
-                </View>
-                <View style={s.tag}><Text style={s.tagText}>GIFT CARD</Text></View>
-              </View>
-              <Text style={s.cardAmount}>{money(found.amount_cents)}</Text>
-              {!!found.note && <Text style={s.cardNote}>“{found.note}”</Text>}
-            </View>
+            <GiftCardFace card={found} width={Dimensions.get('window').width - 48 - 32} />
             <Text style={s.foundBody}>
               Once it's yours, only you can spend it. Use it at {found.business_name}
               {found.expires_at ? ` any time before ${new Date(found.expires_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}` : ''}.

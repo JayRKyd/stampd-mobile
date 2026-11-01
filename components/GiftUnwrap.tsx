@@ -13,6 +13,7 @@ import * as Haptics from 'expo-haptics';
 import { Colors, FontFamily, Palette as J } from '@/constants/theme';
 import { cardGradient, shadeColor } from '@/lib/cardColor';
 import { GiftCard, money } from '@/lib/giftCards';
+import { GiftCardFace, GIFT_FACE_RATIO } from '@/components/GiftCardFace';
 
 // The reveal. Shown once, right after a gift card is claimed. The card
 // arrives face down, sealed with a gold wax seal. Hold the seal, it cracks,
@@ -21,7 +22,7 @@ import { GiftCard, money } from '@/lib/giftCards';
 
 const { width: SCREEN_W } = Dimensions.get('window');
 const CARD_W = Math.min(330, SCREEN_W - 48);
-const CARD_H = Math.round(CARD_W * 0.62);
+const CARD_H = Math.round(CARD_W * GIFT_FACE_RATIO);
 const SEAL = 104;
 const HOLD_MS = 650;
 
@@ -226,12 +227,6 @@ export function GiftUnwrap({ card, visible, onDone }: { card: GiftCard; visible:
             <Animated.View style={[s.face, backStyle]}>
               <LinearGradient colors={[c1, backDeep]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={StyleSheet.absoluteFill} />
               <Svg width={CARD_W} height={CARD_H} style={StyleSheet.absoluteFill} pointerEvents="none">
-                <Defs>
-                  <Pattern id="backdots" patternUnits="userSpaceOnUse" width="40" height="40" patternTransform="rotate(-14)">
-                    <Circle cx="20" cy="20" r="12" stroke="#F7F2E8" strokeWidth="1.2" fill="none" opacity="0.07" />
-                  </Pattern>
-                </Defs>
-                <Rect width={CARD_W} height={CARD_H} fill="url(#backdots)" />
                 <Rect x="10" y="10" width={CARD_W - 20} height={CARD_H - 20} rx="16" fill="none" stroke="#F7F2E8" strokeWidth="1" opacity="0.18" />
               </Svg>
               <Text style={s.backShop} numberOfLines={1}>{card.business_name.toUpperCase()}</Text>
@@ -273,35 +268,7 @@ export function GiftUnwrap({ card, visible, onDone }: { card: GiftCard; visible:
 
             {/* ── front: the card ── */}
             <Animated.View style={[s.face, frontStyle]} pointerEvents="none">
-              <LinearGradient colors={[c1, c2]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={StyleSheet.absoluteFill} />
-              <Svg width={CARD_W} height={CARD_H} style={StyleSheet.absoluteFill} pointerEvents="none">
-                <Defs>
-                  <Pattern id="frontdots" patternUnits="userSpaceOnUse" width="40" height="40" patternTransform="rotate(-14)">
-                    <Circle cx="20" cy="20" r="12" stroke="#F7F2E8" strokeWidth="1.2" fill="none" opacity="0.08" />
-                  </Pattern>
-                </Defs>
-                <Rect width={CARD_W} height={CARD_H} fill="url(#frontdots)" />
-              </Svg>
-              <View style={s.cardInner}>
-                <View style={s.cardHead}>
-                  <View style={s.logo}>
-                    {card.logo_url ? (
-                      <Image source={{ uri: card.logo_url }} style={s.logoImg} contentFit="contain" cachePolicy="memory-disk" />
-                    ) : (
-                      <Text style={[s.logoInitials, { color: c1 }]}>{initials}</Text>
-                    )}
-                  </View>
-                  <View style={{ flex: 1, minWidth: 0 }}>
-                    <Text style={s.cardName} numberOfLines={1}>{card.business_name}</Text>
-                    <Text style={s.cardTag}>GIFT CARD</Text>
-                  </View>
-                  <Ionicons name="gift" size={22} color={Colors.gold} />
-                </View>
-                <Animated.Text style={[s.amount, amountStyle]}>{money(card.amount_cents)}</Animated.Text>
-                <Text style={s.cardFor} numberOfLines={1}>
-                  {card.for_name ? `FOR ${card.for_name.toUpperCase()}` : ''}{card.for_name && card.from_name ? ' · ' : ''}{card.from_name ? `FROM ${card.from_name.toUpperCase()}` : ''}
-                </Text>
-              </View>
+              <GiftCardFace card={card} width={CARD_W} amountAnimatedStyle={amountStyle} style={{ shadowOpacity: 0, elevation: 0 }} />
               <AnimatedGradient
                 colors={['rgba(247,242,232,0)', 'rgba(247,242,232,0.22)', 'rgba(247,242,232,0)']}
                 start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
