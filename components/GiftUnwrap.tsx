@@ -5,7 +5,7 @@ import Animated, {
   Easing, cancelAnimation, runOnJS, interpolate,
 } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
-import Svg, { Defs, Pattern, Circle, Rect, Path, LinearGradient as SvgGradient, RadialGradient, Stop, Text as SvgText } from 'react-native-svg';
+import Svg, { Defs, Pattern, Circle, Rect, Path, LinearGradient as SvgGradient, RadialGradient, Stop } from 'react-native-svg';
 import { Image } from 'expo-image';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -33,39 +33,50 @@ const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 const RING_R = SEAL / 2 + 12;
 const RING_C = 2 * Math.PI * RING_R;
 
-// A wax seal: a slightly uneven gold disc with a pressed Stampd mark.
+// A wax seal. Matte antique gold, a little thickness at the edge, a recessed
+// impression with the Stampd mark (the four dots) pressed into it.
+const WAX = { light: '#cdb264', mid: '#ab8a37', deep: '#7f6424', dark: '#56420f' };
+const BLOB = 'M52 3 C 66 2, 78 6, 87 16 C 97 26, 102 40, 100 54 C 99 68, 92 82, 80 91 C 68 100, 50 103, 36 98 C 20 93, 8 80, 4 64 C 0 48, 4 30, 15 18 C 25 8, 38 4, 52 3 Z';
+
 function Seal({ size }: { size: number }) {
-  const r = size / 2;
   return (
     <Svg width={size} height={size} viewBox="0 0 104 104">
       <Defs>
-        <RadialGradient id="wax" cx="38%" cy="32%" rx="70%" ry="70%">
-          <Stop offset="0" stopColor={GOLD.light} />
-          <Stop offset="0.5" stopColor={GOLD.mid} />
-          <Stop offset="1" stopColor={GOLD.deep} />
-        </RadialGradient>
-        <RadialGradient id="press" cx="50%" cy="50%" rx="50%" ry="50%">
-          <Stop offset="0.72" stopColor={GOLD.dark} stopOpacity="0" />
-          <Stop offset="1" stopColor={GOLD.dark} stopOpacity="0.55" />
+        <SvgGradient id="waxFace" x1="0" y1="0" x2="1" y2="1">
+          <Stop offset="0" stopColor={WAX.light} />
+          <Stop offset="0.55" stopColor={WAX.mid} />
+          <Stop offset="1" stopColor={WAX.deep} />
+        </SvgGradient>
+        <SvgGradient id="waxWell" x1="0" y1="0" x2="1" y2="1">
+          <Stop offset="0" stopColor={WAX.deep} />
+          <Stop offset="1" stopColor={WAX.mid} />
+        </SvgGradient>
+        <RadialGradient id="waxVignette" cx="50%" cy="50%" rx="50%" ry="50%">
+          <Stop offset="0.7" stopColor={WAX.dark} stopOpacity="0" />
+          <Stop offset="1" stopColor={WAX.dark} stopOpacity="0.5" />
         </RadialGradient>
       </Defs>
-      {/* the wax, edge gently uneven */}
-      <Path
-        d="M52 3 C 66 2, 78 6, 87 16 C 97 26, 102 40, 100 54 C 99 68, 92 82, 80 91 C 68 100, 50 103, 36 98 C 20 93, 8 80, 4 64 C 0 48, 4 30, 15 18 C 25 8, 38 4, 52 3 Z"
-        fill="url(#wax)"
-      />
-      <Path
-        d="M52 3 C 66 2, 78 6, 87 16 C 97 26, 102 40, 100 54 C 99 68, 92 82, 80 91 C 68 100, 50 103, 36 98 C 20 93, 8 80, 4 64 C 0 48, 4 30, 15 18 C 25 8, 38 4, 52 3 Z"
-        fill="url(#press)"
-      />
-      {/* pressed ring and mark */}
-      <Circle cx="52" cy="52" r="34" fill="none" stroke={GOLD.dark} strokeWidth="2.2" opacity="0.55" />
-      <Circle cx="52" cy="52" r="34" fill="none" stroke={GOLD.light} strokeWidth="1" opacity="0.5" transform="translate(0,1.5)" />
-      <SvgText x="52" y="66" fontSize="40" fontWeight="800" fontFamily="PlusJakartaSans_800ExtraBold" textAnchor="middle" fill={GOLD.dark} opacity="0.75">S</SvgText>
-      <SvgText x="52" y="64.5" fontSize="40" fontWeight="800" fontFamily="PlusJakartaSans_800ExtraBold" textAnchor="middle" fill={GOLD.light} opacity="0.35">S</SvgText>
-      <Circle cx="38" cy="30" r="10" fill="#fff" opacity="0.12" />
-      {/* silence unused var warnings for r */}
-      <Circle cx={r} cy={r} r="0" />
+      {/* thickness: the same shape, lower and darker */}
+      <Path d={BLOB} fill={WAX.dark} transform="translate(0,3)" />
+      {/* the face */}
+      <Path d={BLOB} fill="url(#waxFace)" />
+      <Path d={BLOB} fill="url(#waxVignette)" />
+      {/* the impression: a recessed well with a dark upper lip and a light lower lip */}
+      <Circle cx="52" cy="52" r="33" fill="url(#waxWell)" />
+      <Circle cx="52" cy="52" r="33" fill="none" stroke={WAX.dark} strokeWidth="1.6" opacity="0.7" />
+      <Circle cx="52" cy="53.5" r="33" fill="none" stroke={WAX.light} strokeWidth="1" opacity="0.45" />
+      <Circle cx="52" cy="52" r="27" fill="none" stroke={WAX.dark} strokeWidth="0.8" opacity="0.4" />
+      {/* the mark: four dots, pressed in (dark dot, light edge beneath) */}
+      <Circle cx="44" cy="44" r="5" fill={WAX.light} opacity="0.45" transform="translate(0,1.4)" />
+      <Circle cx="60" cy="44" r="5" fill={WAX.light} opacity="0.45" transform="translate(0,1.4)" />
+      <Circle cx="44" cy="60" r="5" fill={WAX.light} opacity="0.45" transform="translate(0,1.4)" />
+      <Circle cx="60" cy="60" r="5" fill={WAX.light} opacity="0.45" transform="translate(0,1.4)" />
+      <Circle cx="44" cy="44" r="5" fill={WAX.dark} opacity="0.85" />
+      <Circle cx="60" cy="44" r="5" fill={WAX.dark} opacity="0.85" />
+      <Circle cx="44" cy="60" r="5" fill={WAX.dark} opacity="0.85" />
+      <Circle cx="60" cy="60" r="5" fill={WAX.dark} opacity="0.85" />
+      {/* a soft matte light along the top edge, nothing glossy */}
+      <Path d="M18 20 C 28 10, 40 6, 52 5" stroke={WAX.light} strokeWidth="2" fill="none" opacity="0.35" strokeLinecap="round" />
     </Svg>
   );
 }
@@ -248,7 +259,8 @@ export function GiftUnwrap({ card, visible, onDone }: { card: GiftCard; visible:
                     </Animated.View>
                     <Animated.View style={[s.crack, crackStyle]} pointerEvents="none">
                       <Svg width={SEAL} height={SEAL} viewBox="0 0 104 104">
-                        <Path d="M52 4 L48 22 L56 38 L47 56 L55 72 L49 88 L52 100" stroke="#2a1d05" strokeWidth="2.4" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+                        <Path d="M52 4 L48 22 L56 38 L47 56 L55 72 L49 88 L52 100" stroke="#2a1d05" strokeWidth="2.2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+                        <Path d="M52 4 L48 22 L56 38 L47 56 L55 72 L49 88 L52 100" stroke={WAX.light} strokeWidth="0.8" fill="none" strokeLinecap="round" strokeLinejoin="round" opacity="0.5" transform="translate(1.2,0)" />
                       </Svg>
                     </Animated.View>
                   </Animated.View>
