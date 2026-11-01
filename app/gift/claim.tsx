@@ -11,6 +11,7 @@ import { supabase } from '@/lib/supabase';
 import { revalidateCache } from '@/lib/dataCache';
 import { GiftCard, saneCard, formatClaimInput, money } from '@/lib/giftCards';
 import { takePendingGiftCode } from '@/lib/pendingGift';
+import { GiftUnwrap } from '@/components/GiftUnwrap';
 import { Colors, FontFamily, Palette as J } from '@/constants/theme';
 
 // "Have a gift card?" Type the 8-character code from the slip or message.
@@ -34,6 +35,8 @@ export default function ClaimGiftCardScreen() {
   const [found, setFound] = useState<GiftCard | null>(null);
   const [error, setError] = useState('');
   const [claiming, setClaiming] = useState(false);
+  // The unwrap plays once, right after the claim lands, then hands over to the card
+  const [unwrap, setUnwrap] = useState<GiftCard | null>(null);
 
   const complete = code.replace('-', '').length === 8;
 
@@ -78,7 +81,12 @@ export default function ClaimGiftCardScreen() {
     }
     // The wallet, the shop's card page and Home all show the new balance
     revalidateCache('gift-cards', 'home', 'rewards');
-    router.replace(`/gift/${res.card.id}`);
+    if (res.already || !saneCard(res.card)) {
+      router.replace(`/gift/${res.card.id}`);
+      return;
+    }
+    setClaiming(false);
+    setUnwrap(res.card);
   }
 
   return (
@@ -163,6 +171,10 @@ export default function ClaimGiftCardScreen() {
           <Text style={s.primaryText}>{claiming ? 'Adding…' : 'Add to my gift cards'}</Text>
         </TouchableOpacity>
       </ScrollView>
+
+      {unwrap && (
+        <GiftUnwrap card={unwrap} visible onDone={() => router.replace(`/gift/${unwrap.id}`)} />
+      )}
     </KeyboardAvoidingView>
   );
 }
