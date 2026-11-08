@@ -82,7 +82,10 @@ export default function ClaimGiftCardScreen() {
     // The wallet, the shop's card page and Home all show the new balance
     revalidateCache('gift-cards', 'home', 'rewards');
     if (res.already || !saneCard(res.card)) {
-      router.replace(`/gift/${res.card.id}`);
+      // Already yours, or a reply without a usable card: open it if we know
+      // which one, otherwise land on Rewards where it will show up
+      const cardId = res.card?.id ?? res.card_id;
+      router.replace(typeof cardId === 'string' ? `/gift/${cardId}` : '/(tabs)/rewards');
       return;
     }
     setClaiming(false);

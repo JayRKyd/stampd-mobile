@@ -193,6 +193,24 @@ Merchant side: laptop on `/stamp`. Customer side: phone on Home (PIN visible).
 
 ---
 
+## 7b. Islands and gift cards (1.0.6)
+
+**Islands**
+- [ ] Fresh sign-up: Complete profile asks "Which island are you on?" (Grand Bahama preselected) → pick Nassau → Home badge reads Nassau, Discover shows only Nassau shops (Island Cutz is the test shop there)
+- [ ] Existing account updating from 1.0.5: opens with no prompt, badge reads Grand Bahama, Discover unchanged
+- [ ] Tap the Home badge → picker sheet → switch island → Discover, Today and the "N businesses in …" line follow at once; kill and reopen the app → the choice sticks; the dashboard Settings for that user shows the same island
+- [ ] Discover on an island with nothing: "Nothing in … yet" with the switch-islands hint, no spinner left running
+
+**Gift cards** (Island Cutz has gift cards on; use the dashboard → Gift cards → Issue)
+- [ ] Issue a $25 card with an email → the email arrives from "Island Cutz Barbershop via Stampd" with the ribbon card image; "Add it to Stampd" opens the app on the claim screen with the code filled in (after install: sign in first, then it lands on claim)
+- [ ] Rewards → "Have a gift card code?" → type the 8-character code → preview shows the card → Add → seal cracks, card flips, amount lands, note types → "See my card"
+- [ ] Rewards header shows the Gift cards count; the GIFT CARDS section lists it with the balance; Island Cutz's card page shows the gold "gift card balance" row
+- [ ] Card screen → "Show code" → 6-digit code with the 60-second countdown → dashboard Redeem with that code and an amount → balance drops on the phone after pull-to-refresh; history lists the redeem
+- [ ] Wrong code 3 times → clear error, no crash; the same code claimed again → opens the card you already hold
+- [ ] Share from a sent card (buyer side) → message has the www.stampdbahamas.com/g/… link; tapping it on a phone with the app opens the app, without the app it opens the web preview page with store buttons
+
+---
+
 ## 8. Sweep before sign-off
 
 - [ ] Visit labels pluralize correctly everywhere ("1 cut", "3 cuts", never "classs")
